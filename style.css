@@ -29,7 +29,7 @@ background:
                 linear-gradient(135deg, #f9fbff 0%, #fff 48%, #f9fbff 100%);
   overflow-x: hidden;
   margin:0;
-  background:var(--bg);
+ 
   display:flex;
   flex-direction:column;
   min-height:100%;
