@@ -6,7 +6,16 @@
     <title>FasterNET — Internet Speed Test</title>
     <meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
     <meta name="theme-color" content="#ffffff" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="FasterNET" />
+    <meta name="mobile-web-app-capable" content="yes" />
 <link href="https://fonts.cdnfonts.com/css/lcd" rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/tt-lakes-neue-trial" rel="stylesheet">
                             
@@ -632,9 +641,94 @@ font-family: 'TT Lakes Neue Trial', sans-serif;
             outline: 2px solid var(--accent-2);
             outline-offset: 2px;
         }
+
+        /* ---------- SPLASH SCREEN ---------- */
+        .splash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            background:
+                radial-gradient(circle at 4% 45%, rgba(0, 210, 120, .14), transparent 27%),
+                radial-gradient(circle at 96% 23%, rgba(255, 45, 45, .14), transparent 26%),
+                linear-gradient(135deg, #f9fbff 0%, #fff 48%, #f9fbff 100%);
+            transition: opacity .5s ease, visibility .5s ease;
+        }
+        .splash.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .splash__mark {
+            width: 108px;
+            height: 108px;
+            animation: splashPulse 1.6s ease-in-out infinite;
+        }
+        .splash__name {
+            font-family: 'TT Lakes Neue Trial', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .splash__tag {
+            font-family: 'TT Lakes Neue Trial', sans-serif;
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin: -10px 0 4px;
+        }
+        .splash__bar {
+            width: 140px;
+            height: 3px;
+            border-radius: 999px;
+            background: var(--line);
+            overflow: hidden;
+        }
+        .splash__bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            animation: splashFill 5s linear forwards;
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.07); }
+        }
+        @keyframes splashFill {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .splash__mark { animation: none; }
+            .splash__bar-fill { animation-duration: .1s; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- SPLASH SCREEN -->
+    <div class="splash" id="splashScreen" role="presentation">
+        <svg class="splash__mark" viewBox="0 0 64 64" role="img" aria-label="FasterNET">
+            <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#gSplash)" stroke-width="7" stroke-linecap="round"/>
+            <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#gSplash)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+            <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
+            <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
+            <defs>
+                <linearGradient id="gSplash" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FF7A59"/>
+                    <stop offset="1" stop-color="#FF3B30"/>
+                </linearGradient>
+            </defs>
+        </svg>
+        <span class="splash__name">FasterNET</span>
+        <p class="splash__tag">Fast. Free. No signup.</p>
+        <div class="splash__bar"><div class="splash__bar-fill"></div></div>
+    </div>
 
     <header class="topbar">
         <div class="topbar__inner">
@@ -1326,10 +1420,32 @@ font-family: 'TT Lakes Neue Trial', sans-serif;
             }, AUTOSTART_DELAY_MS);
         }
 
-        if (document.readyState === 'complete') {
+        // Show the splash for 5s, then reveal the app and begin the
+        // normal auto-start countdown.
+        const SPLASH_DURATION_MS = 5000;
+        const splashEl = document.getElementById('splashScreen');
+
+        function dismissSplashAndStart() {
+            splashEl.classList.add('is-hidden');
+            splashEl.addEventListener('transitionend', () => splashEl.remove(), { once: true });
             scheduleAutoStart();
+        }
+
+        function beginAfterSplash() {
+            setTimeout(dismissSplashAndStart, SPLASH_DURATION_MS);
+        }
+
+        if (document.readyState === 'complete') {
+            beginAfterSplash();
         } else {
-            window.addEventListener('load', scheduleAutoStart);
+            window.addEventListener('load', beginAfterSplash);
+        }
+
+        // ---------------- PWA: service worker ----------------
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch((err) => console.error('SW registration failed:', err));
+            });
         }
     </script>
 
