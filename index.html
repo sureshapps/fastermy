@@ -355,7 +355,7 @@
             width: 100%;
         }
 
-        /* ---------- DETAILS — REFINED GRID LAYOUT ---------- */
+        /* ---------- DETAILS — REFINED TWO-COLUMN LAYOUT ---------- */
         .details-grid {
             width: 100%;
             margin-top: 28px;
@@ -365,66 +365,78 @@
             transition: opacity .3s ease;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px 48px;
+            gap: 0;
             text-align: left;
         }
         .details-grid.is-ready {
             opacity: 1;
         }
 
-        .detail-group__title {
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin: 0 0 10px 0;
+        .details-grid .col {
+            padding: 0 8px;
         }
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(229, 233, 239, .5);
+        .details-grid .col:first-child {
+            border-right: 1px solid var(--line);
+            padding-right: 20px;
         }
-        .detail-row:last-child {
+
+        .details-grid .col:last-child {
+            padding-left: 20px;
+        }
+
+        .details-grid .col__title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 0 0 12px 0;
+            padding-bottom: 6px;
+        }
+
+        .details-grid .metric {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(229, 233, 239, .4);
+        }
+        .details-grid .metric:last-of-type {
             border-bottom: none;
         }
 
-        .detail-row__label {
+        .details-grid .metric__label {
             font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
+            font-weight: 500;
             text-transform: uppercase;
+            letter-spacing: 0.04em;
             color: var(--muted);
         }
 
-        .detail-row__value {
+        .details-grid .metric__value {
             font-family: 'DM Mono', monospace;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 500;
             color: var(--ink);
             letter-spacing: -0.01em;
-            display: flex;
-            align-items: baseline;
-            gap: 2px;
+            line-height: 1.3;
         }
-        .detail-row__value .unit {
-            font-family: 'Inter', sans-serif;
+        .details-grid .metric__value small {
             font-size: 0.7rem;
-            font-weight: 500;
+            font-weight: 400;
             color: var(--muted);
-            margin-left: 2px;
+            font-family: 'Inter', sans-serif;
+            margin-left: 3px;
             text-transform: lowercase;
         }
-        .detail-row__value--large {
-            font-size: 2.8rem;
+
+        .details-grid .metric__value--large {
+            font-size: 2.2rem;
             font-weight: 700;
         }
-        .detail-row__value--large .unit {
+        .details-grid .metric__value--large small {
             font-size: 0.9rem;
-            font-weight: 500;
         }
 
         /* ---------- RESULT BAR ---------- */
@@ -554,8 +566,20 @@
         /* ---------- RESPONSIVE ---------- */
         @media (max-width: 480px) {
             .details-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+            }
+            .details-grid .col:first-child {
+                padding-right: 12px;
+            }
+            .details-grid .col:last-child {
+                padding-left: 12px;
+            }
+            .details-grid .metric__value {
+                font-size: 1rem;
+            }
+            .details-grid .metric__value--large {
+                font-size: 1.6rem;
             }
             .steps {
                 gap: 14px;
@@ -575,30 +599,17 @@
             .info-card__value {
                 font-size: 0.85rem;
             }
-            .info-card__sub {
-                font-size: 0.7rem;
-            }
-            .detail-row__value--large {
-                font-size: 2rem;
-            }
-            .detail-row__value {
-                font-size: 1.1rem;
-            }
         }
 
-        @media (max-width: 400px) {
-            .details-grid {
-                gap: 12px;
+        @media (max-width: 360px) {
+            .details-grid .metric__value {
+                font-size: 0.85rem;
             }
-            .detail-row {
-                flex-wrap: wrap;
-                gap: 2px 0;
+            .details-grid .metric__value--large {
+                font-size: 1.3rem;
             }
-            .detail-row__value {
-                font-size: 1rem;
-            }
-            .detail-row__value--large {
-                font-size: 1.6rem;
+            .details-grid .metric__label {
+                font-size: 0.6rem;
             }
         }
 
@@ -692,31 +703,31 @@
             </div>
         </div>
 
-        <!-- DETAILS — REFINED GRID -->
+        <!-- DETAILS — REFINED TWO-COLUMN LAYOUT (matching reference) -->
         <div class="details-grid" id="detailsGrid">
-            <!-- Latency Group -->
-            <div class="detail-group">
-                <div class="detail-group__title">Latency</div>
-                <div class="detail-row">
-                    <span class="detail-row__label">Unloaded</span>
-                    <span class="detail-row__value" id="latUnloaded">– <span class="unit">ms</span></span>
+            <!-- Left column: LATENCY -->
+            <div class="col">
+                <h4 class="col__title">Latency</h4>
+                <div class="metric">
+                    <span class="metric__label">Unloaded</span>
+                    <span class="metric__value" id="latUnloaded">– <small>ms</small></span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-row__label">Loaded</span>
-                    <span class="detail-row__value" id="latLoaded">– <span class="unit">ms</span></span>
+                <div class="metric">
+                    <span class="metric__label">Loaded</span>
+                    <span class="metric__value" id="latLoaded">– <small>ms</small></span>
                 </div>
             </div>
 
-            <!-- Upload Group -->
-            <div class="detail-group">
-                <div class="detail-group__title">Upload</div>
-                <div class="detail-row">
-                    <span class="detail-row__label">Speed</span>
-                    <span class="detail-row__value detail-row__value--large" id="uploadSpeed">– <span class="unit">mbps</span></span>
+            <!-- Right column: UPLOAD -->
+            <div class="col">
+                <h4 class="col__title">Upload</h4>
+                <div class="metric">
+                    <span class="metric__label">Speed</span>
+                    <span class="metric__value metric__value--large" id="uploadSpeed">– <small>Mbps</small></span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-row__label">Data transferred</span>
-                    <span class="detail-row__value" id="uploadTotal">–</span>
+                <div class="metric">
+                    <span class="metric__label">Data</span>
+                    <span class="metric__value" id="uploadTotal">–</span>
                 </div>
             </div>
         </div>
@@ -877,8 +888,6 @@
         let animFrame = null;
         let autoStartTimer = null;
 
-        // ---------------- settings ----------------
-
         function loadSettings() {
             try {
                 const raw = localStorage.getItem(CONFIG_KEY);
@@ -890,8 +899,6 @@
                 settings = { ...DEFAULT_SETTINGS };
             }
         }
-
-        // ---------------- helpers ----------------
 
         function setRing(fraction) {
             const clamped = Math.max(0, Math.min(1, fraction));
@@ -964,8 +971,6 @@
             if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
         }
 
-        // ---------------- test phases ----------------
-
         async function pingOnce(signal) {
             const t0 = performance.now();
             await fetch(CF_DOWN(0), { cache: 'no-store', signal });
@@ -977,7 +982,7 @@
             for (let i = 0; i < 8; i++) {
                 try {
                     samples.push(await pingOnce(signal));
-                } catch (_) { /* ignore */ }
+                } catch (_) {}
             }
             if (!samples.length) throw new Error('latency-failed');
             return median(samples);
@@ -988,7 +993,7 @@
                 while (!isStoppedFn()) {
                     try {
                         out.push(await pingOnce(signal));
-                    } catch (_) { /* skip */ }
+                    } catch (_) {}
                     await sleep(400);
                 }
             })();
@@ -1003,7 +1008,9 @@
             let lastSampleTime = start;
             let lastSampleBytes = 0;
 
-            function addBytes(n) { totalBytes += n; }
+            function addBytes(n) {
+                totalBytes += n;
+            }
 
             function recordSample(force) {
                 const now = performance.now();
@@ -1046,6 +1053,7 @@
                     }
                 }
             }
+
             function maybeSpawn() {
                 while (workers.length < targetWorkers && !stop) {
                     workers.push(worker());
@@ -1134,16 +1142,14 @@
             els.serverMeta.textContent = 'Cloudflare global network (nearest edge, auto-selected)';
         }
 
-        // ---------------- orchestration ----------------
-
         function resetUI() {
             displayedNumber = 0;
             els.mainNumber.textContent = '0';
             els.mainUnit.textContent = 'Mbps';
             els.phaseLabel.textContent = 'Getting ready…';
-            els.latUnloaded.innerHTML = '– <span class="unit">ms</span>';
-            els.latLoaded.innerHTML = '– <span class="unit">ms</span>';
-            els.uploadSpeed.innerHTML = '– <span class="unit">mbps</span>';
+            els.latUnloaded.innerHTML = '– <small>ms</small>';
+            els.latLoaded.innerHTML = '– <small>ms</small>';
+            els.uploadSpeed.innerHTML = '– <small>Mbps</small>';
             els.uploadTotal.textContent = '–';
             els.uploadTotalSmall.textContent = '–';
             els.downloadTotal.textContent = '–';
@@ -1180,18 +1186,16 @@
             loadClientInfo(signal);
 
             try {
-                // 1. latency
                 setStep('latency');
                 els.phaseLabel.textContent = 'Testing latency';
                 els.mainUnit.textContent = 'ms';
                 setRing(0.03);
                 const unloaded = await measureUnloadedLatency(signal);
-                els.latUnloaded.innerHTML = unloaded.toFixed(0) + ' <span class="unit">ms</span>';
+                els.latUnloaded.innerHTML = unloaded.toFixed(0) + ' <small>ms</small>';
                 animateNumberTo(unloaded);
                 setRing(0.1);
                 await sleep(200);
 
-                // 2. download
                 setStep('download');
                 els.phaseLabel.textContent = 'Testing download speed';
                 els.mainUnit.textContent = 'Mbps';
@@ -1214,7 +1218,6 @@
                 setRing(0.5);
                 await sleep(200);
 
-                // 3. upload
                 setStep('upload');
                 els.phaseLabel.textContent = 'Testing upload speed';
 
@@ -1225,7 +1228,7 @@
                 }
 
                 const ul = await measureUpload(cfg, signal, (mbps, totalBytes) => {
-                    els.uploadSpeed.innerHTML = mbps.toFixed(1) + ' <span class="unit">mbps</span>';
+                    els.uploadSpeed.innerHTML = mbps.toFixed(1) + ' <small>Mbps</small>';
                     setRing(0.5 + Math.min(mbps / 150, 1) * 0.42);
                     els.uploadTotal.textContent = formatMB(totalBytes);
                     els.uploadTotalSmall.textContent = formatMB(totalBytes);
@@ -1233,14 +1236,14 @@
                 ulStopped = true;
                 await ulPingLoop;
                 checkAbort(signal);
-                els.uploadSpeed.innerHTML = ul.mbps.toFixed(1) + ' <span class="unit">mbps</span>';
+                els.uploadSpeed.innerHTML = ul.mbps.toFixed(1) + ' <small>Mbps</small>';
                 els.uploadTotal.textContent = formatMB(ul.totalBytes);
                 els.uploadTotalSmall.textContent = formatMB(ul.totalBytes);
 
                 if (loadedSamples.length) {
-                    els.latLoaded.innerHTML = median(loadedSamples).toFixed(0) + ' <span class="unit">ms</span>';
+                    els.latLoaded.innerHTML = median(loadedSamples).toFixed(0) + ' <small>ms</small>';
                 } else {
-                    els.latLoaded.innerHTML = unloaded.toFixed(0) + ' <span class="unit">ms</span>';
+                    els.latLoaded.innerHTML = unloaded.toFixed(0) + ' <small>ms</small>';
                 }
 
                 els.mainUnit.textContent = 'Mbps';
@@ -1270,8 +1273,6 @@
             state = 'idle';
         }
 
-        // ---------------- wiring ----------------
-
         els.controlBtn.addEventListener('click', () => {
             if (state === 'running') {
                 cancelTest();
@@ -1283,8 +1284,6 @@
         els.homeBtn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
-        // ---------------- FAQ ----------------
 
         let lastFocused = null;
 
@@ -1310,8 +1309,6 @@
         els.faqModal.addEventListener('click', (e) => {
             if (e.target === els.faqModal) closeFaq();
         });
-
-        // ---------------- init ----------------
 
         loadSettings();
         resetUI();
