@@ -1,541 +1,590 @@
-:root{
-  --bg:#ffffff;
-  --ink:#15161a;
-  --muted:#8a8d98;
-  --faint:#c7c9d1;
-  --line:#eceef2;
-  --accent-1:#ff7a59;
-  --accent-2:#ff3b30;
-  --accent-soft:#fff1ee;
-  --good:#1bb15b;
-  --red:#e9232d;
-  --radius:18px;
-  --maxw:640px;
-  font-size:16px;
-}
+/*
+  FasterNET — a small, dependency-free internet speed test.
+  Measures latency, download and upload throughput against
+  Cloudflare's public, CORS-enabled speed test endpoints.
+*/
 
-*{box-sizing:border-box;}
-html,body{height:100%;}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  -webkit-font-smoothing:antialiased;
-  display:flex;
-  flex-direction:column;
-  min-height:100%;
-}
+const CF_DOWN = (bytes) => `https://speed.cloudflare.com/__down?bytes=${bytes}`;
+const CF_UP = 'https://speed.cloudflare.com/__up';
+const IP_INFO = 'https://ipwho.is/';
+const DOWN_CHUNK = 4 * 1024 * 1024; // 4MB per streamed request
+const UP_CHUNK = 2 * 1024 * 1024; // 2MB per upload request
+const CONFIG_KEY = 'fasternet-config';
+const AUTOSTART_DELAY_MS = 2000;
 
-/* ---------- topbar ---------- */
-.topbar{
-  padding:20px clamp(16px,4vw,40px) 0;
-}
-.topbar__inner{
-  max-width:1040px;
-  margin:0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-.brand{display:flex;align-items:center;gap:8px;}
-.brand__mark{display:block;}
-.brand__name{
-  font-weight:800;
-  font-size:1.15rem;
-  letter-spacing:-0.02em;
-  color:var(--ink);
-}
-.topbar__nav{display:flex;align-items:center;gap:22px;}
-.linklike{
-  background:none;
-  border:none;
-  font-family:inherit;
-  font-size:0.9rem;
-  color:var(--muted);
-  text-decoration:none;
-  cursor:pointer;
-  padding:6px 4px;
-}
-.linklike:hover{color:var(--ink);}
+const DEFAULT_SETTINGS = {
+  connMin: 1,
+  connMax: 8,
+  durMin: 5,
+  durMax: 30,
+  loadedUpload: false,
+  alwaysShow: false,
+  saveConfig: false,
+};
 
-/* ---------- stage ---------- */
-.stage{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:clamp(24px,6vw,56px) 20px 8px;
-  max-width:var(--maxw);
-  margin:0 auto;
-  width:100%;
-  text-align:center;
-}
+let settings = { ...DEFAULT_SETTINGS };
 
-.ring-wrap{
-  position:relative;
-  width:280px;
-  height:280px;
-  max-width:78vw;
-  max-height:78vw;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:8px;
-}
-.ring{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  transform:rotate(-90deg);
-}
-.ring__track{
-  fill:none;
-  stroke:var(--line);
-  stroke-width:6;
-}
-.ring__progress{
-  fill:none;
-  stroke:var(--accent-2);
-  stroke-width:6;
-  stroke-linecap:round;
-  stroke-dasharray:603;
-  stroke-dashoffset:603;
-  transition:stroke-dashoffset .25s ease, stroke .3s ease;
-}
+const els = {
+  ring: document.getElementById('ringProgress'),
+  phaseLabel: document.getElementById('phaseLabel'),
+  mainNumber: document.getElementById('mainNumber'),
+  mainUnit: document.getElementById('mainUnit'),
+  controlBtn: document.getElementById('controlBtn'),
+  iconPlay: document.getElementById('iconPlay'),
+  iconPause: document.getElementById('iconPause'),
+  iconRedo: document.getElementById('iconRedo'),
+  steps: document.getElementById('steps'),
+  details: document.getElementById('details'),
+  latUnloaded: document.getElementById('latUnloaded'),
+  latLoaded: document.getElementById('latLoaded'),
+  uploadSpeed: document.getElementById('uploadSpeed'),
+  clientMeta: document.getElementById('clientMeta'),
+  serverMeta: document.getElementById('serverMeta'),
+  downloadTotal: document.getElementById('downloadTotal'),
+  uploadTotal: document.getElementById('uploadTotal'),
+  homeBtn: document.getElementById('homeBtn'),
+  aboutBtn: document.getElementById('aboutBtn'),
+  faqModal: document.getElementById('faqModal'),
+  faqClose: document.getElementById('faqClose'),
+  // settings panel
+  settingsToggle: document.getElementById('settingsToggle'),
+  settingsPanel: document.getElementById('settingsPanel'),
+  dispConnMin: document.getElementById('dispConnMin'),
+  dispConnMax: document.getElementById('dispConnMax'),
+  dispDurMin: document.getElementById('dispDurMin'),
+  dispDurMax: document.getElementById('dispDurMax'),
+  dispLoadedUpload: document.getElementById('dispLoadedUpload'),
+  dispAlwaysShow: document.getElementById('dispAlwaysShow'),
+  dispSaveConfig: document.getElementById('dispSaveConfig'),
+  settingsReset: document.getElementById('settingsReset'),
+  settingsSave: document.getElementById('settingsSave'),
+  settingsCancel: document.getElementById('settingsCancel'),
+};
 
-.reading{position:relative;z-index:1;}
-.reading__label{
-  margin:0 0 2px;
-  font-size:0.78rem;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  color:var(--muted);
-  font-weight:600;
-}
-.reading__number{
-  font-family:'Inter',sans-serif;
-  font-weight:800;
-  font-size:clamp(3.4rem,14vw,4.6rem);
-  line-height:1;
-  letter-spacing:-0.03em;
-  font-variant-numeric:tabular-nums;
-  color:var(--ink);
-}
-.reading__unit{
-  margin:2px 0 0;
-  font-size:0.95rem;
-  font-weight:600;
-  color:var(--muted);
-}
+const RING_CIRCUMFERENCE = 2 * Math.PI * 96;
+els.ring.style.strokeDasharray = String(RING_CIRCUMFERENCE);
 
-.controlBtn{
-  position:absolute;
-  bottom:-6px;
-  right:6px;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  border:1.5px solid var(--faint);
-  background:#fff;
-  color:var(--ink);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:border-color .2s, transform .15s, background .2s;
-  box-shadow:0 1px 2px rgba(20,20,30,.04);
-}
-.controlBtn:hover{border-color:var(--accent-2); color:var(--accent-2); transform:translateY(-1px);}
-.controlBtn:active{transform:translateY(0);}
-.controlBtn.is-running{border-color:var(--accent-2); color:var(--accent-2);}
+let state = 'idle'; // idle | running | done | error
+let abortCtl = null;
+let displayedNumber = 0;
+let animFrame = null;
+let autoStartTimer = null;
 
-/* ---------- steps ---------- */
-.steps{
-  display:flex;
-  gap:22px;
-  margin:26px 0 6px;
-}
-.step{
-  font-size:0.78rem;
-  font-weight:600;
-  color:var(--faint);
-  position:relative;
-  padding-left:16px;
-}
-.step::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:50%;
-  transform:translateY(-50%);
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:var(--faint);
-}
-.step.is-active{color:var(--ink);}
-.step.is-active::before{background:var(--accent-2); box-shadow:0 0 0 3px var(--accent-soft);}
-.step.is-done{color:var(--muted);}
-.step.is-done::before{background:var(--good);}
+// ---------------- settings persistence ----------------
 
-/* ---------- details ---------- */
-.details{
-  display:flex;
-  gap:36px;
-  margin-top:28px;
-  padding-top:24px;
-  border-top:1px solid var(--line);
-  width:100%;
-  justify-content:center;
-  opacity:.35;
-  transition:opacity .3s ease;
-}
-.details.is-ready{opacity:1;}
-.details__col h3{
-  margin:0 0 12px;
-  font-size:0.72rem;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  color:var(--muted);
-  font-weight:700;
-  text-align:left;
-}
-.details__row{display:flex; gap:26px;}
-.details__k{
-  margin:0 0 2px;
-  font-size:0.72rem;
-  color:var(--muted);
-  text-align:left;
-}
-.details__v{
-  margin:0;
-  font-family:'DM Mono', monospace;
-  font-size:1.3rem;
-  font-weight:500;
-  color:var(--ink);
-  text-align:left;
-}
-.details__v--big{
-  font-size:2.5rem;
-  font-weight:700;
-  letter-spacing:-0.02em;
-}
-.details__v small{
-  font-size:0.68rem;
-  color:var(--muted);
-  margin-left:2px;
-  font-family:'Inter',sans-serif;
-}
-.details__v--big small{
-  font-size:0.85rem;
-  margin-left:4px;
-}
-
-.meta{
-  margin:16px 0 0;
-  font-size:0.8rem;
-  color:var(--ink);
-}
-.meta strong{font-weight:700;}
-.meta span{color:var(--muted); font-family:'DM Mono', monospace; font-size:0.78rem;}
-
-/* ---------- result bar (settings toggle + transfer totals) ---------- */
-.resultBar{
-  margin-top:22px;
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:8px 10px 8px 8px;
-}
-
-.setting-btn {
-  border: 0;
-  background: var(--red);
-  color: white;
-  border-radius: 11px;
-  padding: 11px 25px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 7px 17px rgba(233, 35, 45, .18);
-  transition: background .2s, transform .15s;
-  white-space: nowrap;
-}
-.setting-btn:hover {
-  background: #d41f28;
-}
-.setting-btn:active {
-  transform: scale(.96);
-}
-
-.transfer-stats {
-  display: flex;
-  gap: 20px;
-  font-size: 0.85rem;
-  padding-right: 10px;
-}
-.download,
-.upload {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #20232a;
-  font-family: 'DM Mono', monospace;
-}
-.download svg,
-.upload svg {
-  color: var(--muted);
-}
-
-/* ───────────── SETTINGS PANEL ───────────── */
-.settings {
-  display: none; /* hidden by default */
-  margin-top: 14px;
-  width: 100%;
-  text-align: left;
-  padding: 29px clamp(20px, 5vw, 39px) 25px;
-  border: 1px solid rgba(227, 231, 238, .95);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .70);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 12px 35px rgba(45, 55, 70, .055);
-}
-
-/* when open — smooth slide + fade */
-.settings.show {
-  display: block;
-  animation: settingsIn .25s cubic-bezier(.22, .61, .36, 1);
-}
-
-@keyframes settingsIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      settings = { ...DEFAULT_SETTINGS, ...saved };
+    }
+  } catch (_) {
+    settings = { ...DEFAULT_SETTINGS };
   }
 }
 
-.settings-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 38px;
-  margin-bottom: 20px;
-}
-.settings h4 {
-  font-size: 15px;
-  margin: 0 0 14px;
-  color: var(--ink);
-}
-
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.input-group label {
-  display: block;
-  font-size: 13px;
-  color: #858b9a;
-  margin-bottom: 6px;
-}
-.input {
-  width: 100%;
-  height: 37px;
-  border: 1px solid #e6eaf0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .8);
-  padding: 0 12px;
-  font-size: 14px;
-  color: #353a43;
-  font-family: 'DM Mono', monospace;
-  pointer-events: none; /* read-only display */
+// Reflects the live `settings` object into the read-only settings panel.
+function updateSettingsDisplay() {
+  if (!els.settingsPanel) return;
+  if (els.dispConnMin) els.dispConnMin.value = settings.connMin;
+  if (els.dispConnMax) els.dispConnMax.value = settings.connMax;
+  if (els.dispDurMin) els.dispDurMin.value = settings.durMin;
+  if (els.dispDurMax) els.dispDurMax.value = settings.durMax;
+  if (els.dispLoadedUpload) els.dispLoadedUpload.classList.toggle('is-checked', !!settings.loadedUpload);
+  if (els.dispAlwaysShow) els.dispAlwaysShow.classList.toggle('is-checked', !!settings.alwaysShow);
+  if (els.dispSaveConfig) els.dispSaveConfig.classList.toggle('is-checked', !!settings.saveConfig);
 }
 
-.checks {
-  display: grid;
-  gap: 15px;
-  margin: 10px 0 24px;
-}
-.check {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  color: var(--ink);
-}
-.check-box {
-  width: 19px;
-  height: 19px;
-  flex-shrink: 0;
-  border: 1.5px solid #9da4b3;
-  border-radius: 4px;
-  background: white;
-  position: relative;
-  transition: background .15s, border-color .15s;
-}
-.check-box.is-checked {
-  background: var(--accent-2);
-  border-color: var(--accent-2);
-}
-.check-box.is-checked::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+// ---------------- helpers ----------------
+
+function setRing(fraction) {
+  const clamped = Math.max(0, Math.min(1, fraction));
+  els.ring.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - clamped));
 }
 
-.buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
-}
-.btn {
-  height: 43px;
-  border-radius: 11px;
-  border: 1px solid #eef0f4;
-  background: rgba(255, 255, 255, .8);
-  color: #8a90a0;
-  font-size: 14px;
-  font-weight: 650;
-  cursor: pointer;
-  transition: background .2s, border-color .2s;
-}
-.btn:hover {
-  background: #f5f7fa;
-}
-.btn.save {
-  border: 1.5px solid #ff8d8d;
-  color: #ff3131;
-  background: white;
-}
-.btn.save:hover {
-  background: #fff5f5;
+function setStep(name) {
+  [...els.steps.children].forEach((el) => {
+    el.classList.remove('is-active', 'is-done');
+    const order = ['latency', 'download', 'upload'];
+    if (el.dataset.step === name) el.classList.add('is-active');
+    else if (order.indexOf(el.dataset.step) < order.indexOf(name)) el.classList.add('is-done');
+  });
 }
 
-/* ---------- footer ---------- */
-.footer{
-  text-align:center;
-  padding:30px 20px 40px;
-  color:var(--muted);
-  font-size:0.78rem;
-  max-width:520px;
-  margin:0 auto;
-}
-.footer p{margin:0;}
-
-/* ---------- FAQ modal ---------- */
-.modalOverlay{
-  position:fixed;
-  inset:0;
-  background:rgba(20,20,26,.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  z-index:50;
-}
-.modalOverlay[hidden]{display:none;}
-.modal{
-  background:#fff;
-  border-radius:16px;
-  max-width:640px;
-  width:100%;
-  max-height:82vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(20,20,30,.25);
-}
-.modal__header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:18px 20px;
-  border-bottom:1px solid var(--line);
-  flex-shrink:0;
-}
-.modal__header h2{
-  margin:0;
-  font-size:1.05rem;
-  font-weight:800;
-  letter-spacing:-0.01em;
-}
-.modal__close{
-  background:none;
-  border:1px solid var(--line);
-  border-radius:50%;
-  width:32px;
-  height:32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--muted);
-  cursor:pointer;
-  flex-shrink:0;
-}
-.modal__close:hover{color:var(--ink); border-color:var(--faint);}
-.modal__body{
-  padding:8px 24px 28px;
-  overflow-y:auto;
-  text-align:left;
-}
-.modal__body h3{
-  font-size:0.92rem;
-  font-weight:700;
-  margin:20px 0 6px;
-  color:var(--ink);
-}
-.modal__body p{
-  margin:0 0 8px;
-  font-size:0.86rem;
-  line-height:1.55;
-  color:#4a4c56;
-}
-.modal__body ul{
-  margin:0 0 8px;
-  padding-left:20px;
-  font-size:0.86rem;
-  line-height:1.55;
-  color:#4a4c56;
-}
-.modal__body li{margin-bottom:4px;}
-.modal__body strong{color:var(--ink);}
-
-/* ---------- responsive ---------- */
-@media (max-width:480px){
-  .details{gap:20px;}
-  .details__row{gap:16px;}
-  .steps{gap:14px;}
-  .step{font-size:0.7rem; padding-left:13px;}
-  .details__v--big{font-size:2rem;}
-  .resultBar{padding:7px 8px;}
-  .setting-btn{padding:9px 16px; font-size:13px;}
-  .transfer-stats{gap:12px; font-size:0.78rem; padding-right:4px;}
-  .settings-grid{grid-template-columns:1fr;}
-  .buttons{grid-template-columns:1fr;}
+function markAllStepsDone() {
+  [...els.steps.children].forEach((el) => {
+    el.classList.remove('is-active');
+    el.classList.add('is-done');
+  });
 }
 
-@media (prefers-reduced-motion: reduce){
-  .ring__progress{transition:none;}
-  .controlBtn{transition:none;}
-  .settings.show{animation:none;}
+function animateNumberTo(target, opts = {}) {
+  const duration = opts.duration ?? 400;
+  const start = displayedNumber;
+  const startTime = performance.now();
+  if (animFrame) cancelAnimationFrame(animFrame);
+
+  function tick(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    displayedNumber = start + (target - start) * eased;
+    els.mainNumber.textContent = formatSpeed(displayedNumber);
+    if (t < 1) {
+      animFrame = requestAnimationFrame(tick);
+    } else {
+      displayedNumber = target;
+    }
+  }
+  animFrame = requestAnimationFrame(tick);
 }
 
-:focus-visible{
-  outline:2px solid var(--accent-2);
-  outline-offset:2px;
+function formatSpeed(v) {
+  if (v >= 100) return Math.round(v).toString();
+  if (v >= 10) return v.toFixed(1);
+  return v.toFixed(2);
+}
+
+function formatMB(bytes) {
+  return (bytes / 1_000_000).toFixed(1) + 'MB';
+}
+
+function median(arr) {
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function bytesToMbps(bytes, seconds) {
+  if (seconds <= 0) return 0;
+  return (bytes * 8) / seconds / 1_000_000;
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function checkAbort(signal) {
+  if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+}
+
+// ---------------- test phases ----------------
+
+async function pingOnce(signal) {
+  const t0 = performance.now();
+  await fetch(CF_DOWN(0), { cache: 'no-store', signal });
+  return performance.now() - t0;
+}
+
+async function measureUnloadedLatency(signal) {
+  const samples = [];
+  for (let i = 0; i < 8; i++) {
+    try {
+      samples.push(await pingOnce(signal));
+    } catch (_) {
+      /* ignore a dropped sample */
+    }
+  }
+  if (!samples.length) throw new Error('latency-failed');
+  return median(samples);
+}
+
+function pingLoop(signal, isStoppedFn, out) {
+  return (async () => {
+    while (!isStoppedFn()) {
+      try {
+        out.push(await pingOnce(signal));
+      } catch (_) { /* saturated link; skip sample */ }
+      await sleep(400);
+    }
+  })();
+}
+
+/**
+ * Adaptive, duration-bounded transfer: ramps parallel connections from
+ * connMin up to connMax, and stops once the measurement stabilizes after
+ * durMin seconds (or unconditionally at durMax seconds).
+ */
+async function runAdaptiveTransfer({ cfg, signal, onProgress, doRequest }) {
+  let stop = false;
+  let totalBytes = 0;
+  const start = performance.now();
+  let targetWorkers = cfg.connMin;
+  const samples = [];
+  let lastSampleTime = start;
+  let lastSampleBytes = 0;
+
+  function addBytes(n) {
+    totalBytes += n;
+  }
+
+  function recordSample(force) {
+    const now = performance.now();
+    if (!force && now - lastSampleTime < 200) return;
+    const windowBytes = totalBytes - lastSampleBytes;
+    const dt = (now - lastSampleTime) / 1000;
+    const instMbps = bytesToMbps(windowBytes, dt);
+    if (instMbps > 0) {
+      samples.push(instMbps);
+      if (samples.length > 6) samples.shift();
+    }
+    const overall = bytesToMbps(totalBytes, (now - start) / 1000);
+    onProgress(overall || instMbps, totalBytes);
+    lastSampleTime = now;
+    lastSampleBytes = totalBytes;
+  }
+
+  function stabilized() {
+    if (samples.length < 5) return false;
+    const recent = samples.slice(-5);
+    const mx = Math.max(...recent);
+    const mn = Math.min(...recent);
+    const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    return avg > 0 && (mx - mn) / avg < 0.12;
+  }
+
+  const rampTimer = setInterval(() => {
+    if (targetWorkers < cfg.connMax) targetWorkers++;
+  }, 1000);
+
+  const workers = [];
+  async function worker() {
+    while (!stop) {
+      try {
+        await doRequest(signal, addBytes, () => stop);
+        recordSample(false);
+      } catch (e) {
+        if (signal.aborted) return;
+        await sleep(200);
+      }
+    }
+  }
+  function maybeSpawn() {
+    while (workers.length < targetWorkers && !stop) {
+      workers.push(worker());
+    }
+  }
+  const spawnTimer = setInterval(maybeSpawn, 300);
+  maybeSpawn();
+
+  while (true) {
+    await sleep(250);
+    recordSample(false);
+    const elapsed = (performance.now() - start) / 1000;
+    if (signal.aborted) break;
+    if (elapsed >= cfg.durMax) break;
+    if (elapsed >= cfg.durMin && stabilized()) break;
+  }
+  stop = true;
+  clearInterval(rampTimer);
+  clearInterval(spawnTimer);
+  await Promise.all(workers);
+  recordSample(true);
+  const elapsed = (performance.now() - start) / 1000;
+  return { mbps: bytesToMbps(totalBytes, elapsed), totalBytes };
+}
+
+function measureDownload(cfg, signal, onProgress) {
+  return runAdaptiveTransfer({
+    cfg,
+    signal,
+    onProgress,
+    doRequest: async (sig, addBytes) => {
+      const res = await fetch(CF_DOWN(DOWN_CHUNK), { cache: 'no-store', signal: sig });
+      const reader = res.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        addBytes(value.length);
+      }
+    },
+  });
+}
+
+function measureUpload(cfg, signal, onProgress) {
+  const payload = new Uint8Array(UP_CHUNK);
+  crypto.getRandomValues(payload.subarray(0, Math.min(65536, payload.length)));
+  for (let offset = 65536; offset < payload.length; offset += 65536) {
+    payload.set(payload.subarray(0, Math.min(65536, payload.length - offset)), offset);
+  }
+
+  return runAdaptiveTransfer({
+    cfg,
+    signal,
+    onProgress,
+    doRequest: (sig, addBytes) =>
+      new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        let lastLoaded = 0;
+        xhr.open('POST', CF_UP, true);
+        xhr.upload.onprogress = (e) => {
+          addBytes(e.loaded - lastLoaded);
+          lastLoaded = e.loaded;
+        };
+        xhr.onloadend = () => resolve();
+        xhr.onerror = () => reject(new Error('upload-failed'));
+        const onAbort = () => xhr.abort();
+        sig.addEventListener('abort', onAbort, { once: true });
+        xhr.send(payload);
+      }),
+  });
+}
+
+async function loadClientInfo(signal) {
+  try {
+    const res = await fetch(IP_INFO, { signal });
+    const data = await res.json();
+    if (data && data.success !== false) {
+      const isp = data.connection?.isp || data.connection?.org || '';
+      const place = [data.city, data.country_code].filter(Boolean).join(', ');
+      els.clientMeta.textContent = [place, data.ip, isp].filter(Boolean).join('   ');
+    } else {
+      els.clientMeta.textContent = 'unavailable';
+    }
+  } catch (_) {
+    els.clientMeta.textContent = 'unavailable';
+  }
+  els.serverMeta.textContent = 'Cloudflare global network (nearest edge, auto-selected)';
+}
+
+// ---------------- orchestration ----------------
+
+function resetUI() {
+  displayedNumber = 0;
+  els.mainNumber.textContent = '0';
+  els.mainUnit.textContent = 'Mbps';
+  els.phaseLabel.textContent = 'Getting ready…';
+  els.latUnloaded.textContent = '–';
+  els.latLoaded.textContent = '–';
+  els.uploadSpeed.textContent = '–';
+  els.downloadTotal.textContent = '–';
+  els.uploadTotal.textContent = '–';
+  els.details.classList.toggle('is-ready', !!settings.alwaysShow);
+  setRing(0);
+  [...els.steps.children].forEach((el) => el.classList.remove('is-active', 'is-done'));
+}
+
+function setControlIcon(mode) {
+  els.iconPlay.style.display = mode === 'play' ? '' : 'none';
+  els.iconPause.style.display = mode === 'pause' ? '' : 'none';
+  els.iconRedo.style.display = mode === 'redo' ? '' : 'none';
+  els.controlBtn.classList.toggle('is-running', mode === 'pause');
+  els.controlBtn.setAttribute(
+    'aria-label',
+    mode === 'play' ? 'Start test' : mode === 'pause' ? 'Cancel test' : 'Run again'
+  );
+}
+
+async function runTest() {
+  if (autoStartTimer) {
+    clearTimeout(autoStartTimer);
+    autoStartTimer = null;
+  }
+  state = 'running';
+  abortCtl = new AbortController();
+  const { signal } = abortCtl;
+  resetUI();
+  setControlIcon('pause');
+
+  const cfg = { connMin: settings.connMin, connMax: settings.connMax, durMin: settings.durMin, durMax: settings.durMax };
+
+  loadClientInfo(signal);
+
+  try {
+    // 1. latency
+    setStep('latency');
+    els.phaseLabel.textContent = 'Testing latency';
+    els.mainUnit.textContent = 'ms';
+    setRing(0.03);
+    const unloaded = await measureUnloadedLatency(signal);
+    els.latUnloaded.textContent = unloaded.toFixed(0);
+    animateNumberTo(unloaded);
+    setRing(0.1);
+    await sleep(200);
+
+    // 2. download (with loaded-latency sampling running alongside)
+    setStep('download');
+    els.phaseLabel.textContent = 'Testing download speed';
+    els.mainUnit.textContent = 'Mbps';
+    els.details.classList.add('is-ready');
+
+    let dlStopped = false;
+    const loadedSamples = [];
+    const dlPingLoop = pingLoop(signal, () => dlStopped, loadedSamples);
+
+    const dl = await measureDownload(cfg, signal, (mbps, totalBytes) => {
+      animateNumberTo(mbps, { duration: 150 });
+      setRing(0.1 + Math.min(mbps / 300, 1) * 0.4);
+      els.downloadTotal.textContent = formatMB(totalBytes);
+    });
+    dlStopped = true;
+    await dlPingLoop;
+    checkAbort(signal);
+    animateNumberTo(dl.mbps, { duration: 200 });
+    els.downloadTotal.textContent = formatMB(dl.totalBytes);
+    setRing(0.5);
+    await sleep(200);
+
+    // 3. upload (optionally also sampling loaded latency)
+    setStep('upload');
+    els.phaseLabel.textContent = 'Testing upload speed';
+
+    let ulStopped = false;
+    let ulPingLoop = Promise.resolve();
+    if (settings.loadedUpload) {
+      ulPingLoop = pingLoop(signal, () => ulStopped, loadedSamples);
+    }
+
+    const ul = await measureUpload(cfg, signal, (mbps, totalBytes) => {
+      els.uploadSpeed.textContent = mbps.toFixed(1);
+      setRing(0.5 + Math.min(mbps / 150, 1) * 0.42);
+      els.uploadTotal.textContent = formatMB(totalBytes);
+    });
+    ulStopped = true;
+    await ulPingLoop;
+    checkAbort(signal);
+    els.uploadSpeed.textContent = ul.mbps.toFixed(1);
+    els.uploadTotal.textContent = formatMB(ul.totalBytes);
+
+    if (loadedSamples.length) {
+      els.latLoaded.textContent = median(loadedSamples).toFixed(0);
+    } else {
+      els.latLoaded.textContent = unloaded.toFixed(0);
+    }
+
+    // done — headline number goes back to download, fast.com style
+    els.mainUnit.textContent = 'Mbps';
+    animateNumberTo(dl.mbps, { duration: 300 });
+    els.phaseLabel.textContent = 'Your internet speed is';
+    markAllStepsDone();
+    setRing(1);
+    state = 'done';
+    setControlIcon('redo');
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      els.phaseLabel.textContent = 'Test cancelled';
+      state = 'idle';
+      setControlIcon('play');
+      setRing(0);
+    } else {
+      console.error(err);
+      els.phaseLabel.textContent = 'Could not reach the test server — check your connection';
+      state = 'error';
+      setControlIcon('redo');
+    }
+  }
+}
+
+function cancelTest() {
+  if (abortCtl) abortCtl.abort();
+  state = 'idle';
+}
+
+// ---------------- wiring: test control ----------------
+
+els.controlBtn.addEventListener('click', () => {
+  if (state === 'running') {
+    cancelTest();
+  } else {
+    runTest();
+  }
+});
+
+// ---------------- wiring: top nav ----------------
+
+els.homeBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ---------------- wiring: settings panel ----------------
+// Guarded so a missing element (e.g. an older markup version) never breaks
+// the rest of the page's scripts.
+
+if (els.settingsToggle && els.settingsPanel) {
+  els.settingsToggle.addEventListener('click', function (e) {
+    e.stopPropagation(); // don't let this same click reach the outside-click handler below
+    const isOpen = els.settingsPanel.classList.toggle('show');
+    if (isOpen) updateSettingsDisplay();
+    this.innerHTML = isOpen ? '⚙ &nbsp; Close' : '⚙ &nbsp; Setting';
+    this.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  document.addEventListener('click', (e) => {
+    const isClickInside = els.settingsPanel.contains(e.target) || els.settingsToggle.contains(e.target);
+    if (!isClickInside && els.settingsPanel.classList.contains('show')) {
+      els.settingsPanel.classList.remove('show');
+      els.settingsToggle.innerHTML = '⚙ &nbsp; Setting';
+      els.settingsToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  function closeSettingsPanel() {
+    els.settingsPanel.classList.remove('show');
+    els.settingsToggle.innerHTML = '⚙ &nbsp; Setting';
+    els.settingsToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  // Fields are read-only display, so Save/Cancel just close the panel.
+  // Reset clears any saved device config back to the built-in defaults.
+  if (els.settingsCancel) {
+    els.settingsCancel.addEventListener('click', closeSettingsPanel);
+  }
+  if (els.settingsSave) {
+    els.settingsSave.addEventListener('click', closeSettingsPanel);
+  }
+  if (els.settingsReset) {
+    els.settingsReset.addEventListener('click', () => {
+      settings = { ...DEFAULT_SETTINGS };
+      localStorage.removeItem(CONFIG_KEY);
+      updateSettingsDisplay();
+      if (state === 'idle') els.details.classList.toggle('is-ready', !!settings.alwaysShow);
+      closeSettingsPanel();
+    });
+  }
+}
+
+// ---------------- wiring: About / FAQ modal ----------------
+
+let lastFocused = null;
+
+function openFaq() {
+  lastFocused = document.activeElement;
+  els.faqModal.removeAttribute('hidden');
+  els.faqClose.focus();
+  document.addEventListener('keydown', onFaqKeydown);
+}
+
+function closeFaq() {
+  els.faqModal.setAttribute('hidden', '');
+  document.removeEventListener('keydown', onFaqKeydown);
+  if (lastFocused) lastFocused.focus();
+}
+
+function onFaqKeydown(e) {
+  if (e.key === 'Escape') closeFaq();
+}
+
+els.aboutBtn.addEventListener('click', openFaq);
+els.faqClose.addEventListener('click', closeFaq);
+els.faqModal.addEventListener('click', (e) => {
+  if (e.target === els.faqModal) closeFaq();
+});
+
+// ---------------- init ----------------
+
+loadSettings();
+updateSettingsDisplay();
+resetUI();
+
+function scheduleAutoStart() {
+  autoStartTimer = setTimeout(() => {
+    autoStartTimer = null;
+    runTest();
+  }, AUTOSTART_DELAY_MS);
+}
+
+if (document.readyState === 'complete') {
+  scheduleAutoStart();
+} else {
+  window.addEventListener('load', scheduleAutoStart);
 }
