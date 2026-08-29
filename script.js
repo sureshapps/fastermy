@@ -42,18 +42,6 @@ const els = {
   serverMeta: document.getElementById('serverMeta'),
   downloadTotal: document.getElementById('downloadTotal'),
   uploadTotal: document.getElementById('uploadTotal'),
-  settingsBtn: document.getElementById('settingsBtn'),
-  settingsPanel: document.getElementById('settingsPanel'),
-  connMin: document.getElementById('connMin'),
-  connMax: document.getElementById('connMax'),
-  durMin: document.getElementById('durMin'),
-  durMax: document.getElementById('durMax'),
-  optLoadedUpload: document.getElementById('optLoadedUpload'),
-  optAlwaysShow: document.getElementById('optAlwaysShow'),
-  optSaveConfig: document.getElementById('optSaveConfig'),
-  settingsReset: document.getElementById('settingsReset'),
-  settingsSave: document.getElementById('settingsSave'),
-  settingsCancel: document.getElementById('settingsCancel'),
   homeBtn: document.getElementById('homeBtn'),
   aboutBtn: document.getElementById('aboutBtn'),
   faqModal: document.getElementById('faqModal'),
@@ -68,9 +56,10 @@ let abortCtl = null;
 let displayedNumber = 0;
 let animFrame = null;
 let autoStartTimer = null;
-let panelSnapshot = null;
 
 // ---------------- settings persistence ----------------
+// The settings UI is hidden, but a saved config (if one exists from an
+// earlier version of the page) is still honored; otherwise defaults apply.
 
 function loadSettings() {
   try {
@@ -82,35 +71,6 @@ function loadSettings() {
   } catch (_) {
     settings = { ...DEFAULT_SETTINGS };
   }
-  applySettingsToInputs(settings);
-}
-
-function applySettingsToInputs(cfg) {
-  els.connMin.value = cfg.connMin;
-  els.connMax.value = cfg.connMax;
-  els.durMin.value = cfg.durMin;
-  els.durMax.value = cfg.durMax;
-  els.optLoadedUpload.checked = !!cfg.loadedUpload;
-  els.optAlwaysShow.checked = !!cfg.alwaysShow;
-  els.optSaveConfig.checked = !!cfg.saveConfig;
-}
-
-function readSettingsFromInputs() {
-  return {
-    connMin: clampNum(els.connMin.value, 1, 16, 1),
-    connMax: clampNum(els.connMax.value, 1, 16, 8),
-    durMin: clampNum(els.durMin.value, 2, 60, 5),
-    durMax: clampNum(els.durMax.value, 2, 60, 30),
-    loadedUpload: els.optLoadedUpload.checked,
-    alwaysShow: els.optAlwaysShow.checked,
-    saveConfig: els.optSaveConfig.checked,
-  };
-}
-
-function clampNum(v, min, max, fallback) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, Math.round(n)));
 }
 
 // ---------------- helpers ----------------
@@ -505,45 +465,6 @@ els.controlBtn.addEventListener('click', () => {
   } else {
     runTest();
   }
-});
-
-// ---------------- wiring: settings panel ----------------
-
-els.settingsBtn.addEventListener('click', () => {
-  const isHidden = els.settingsPanel.hasAttribute('hidden');
-  if (isHidden) {
-    panelSnapshot = { ...settings };
-    applySettingsToInputs(settings);
-    els.settingsPanel.removeAttribute('hidden');
-    els.settingsBtn.setAttribute('aria-expanded', 'true');
-  } else {
-    closeSettingsPanel();
-  }
-});
-
-function closeSettingsPanel() {
-  els.settingsPanel.setAttribute('hidden', '');
-  els.settingsBtn.setAttribute('aria-expanded', 'false');
-}
-
-els.settingsReset.addEventListener('click', () => {
-  applySettingsToInputs(DEFAULT_SETTINGS);
-});
-
-els.settingsCancel.addEventListener('click', () => {
-  if (panelSnapshot) applySettingsToInputs(panelSnapshot);
-  closeSettingsPanel();
-});
-
-els.settingsSave.addEventListener('click', () => {
-  settings = readSettingsFromInputs();
-  if (settings.saveConfig) {
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(settings));
-  } else {
-    localStorage.removeItem(CONFIG_KEY);
-  }
-  els.details.classList.toggle('is-ready', settings.alwaysShow && state === 'idle');
-  closeSettingsPanel();
 });
 
 // ---------------- wiring: top nav ----------------
