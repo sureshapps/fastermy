@@ -122,7 +122,16 @@ background:
   width:100%;
   height:100%;
   transform:rotate(-90deg);
-}
+  
+            border-radius: 50%;
+            background:
+                conic-gradient(from -1deg,
+                    var(--red) 0deg 43deg,
+                    #edf0f5 43deg 360deg);
+            padding: 13px;
+            filter: drop-shadow(0 12px 24px rgba(80, 90, 110, .05));
+        }
+
 .ring__track{
   fill:none;
   stroke:var(--line);
