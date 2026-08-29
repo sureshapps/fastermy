@@ -1,204 +1,1313 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>FasterNET — Internet Speed Test</title>
-<meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
-<meta name="theme-color" content="#ffffff" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>FasterNET — Internet Speed Test</title>
+    <meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        :root {
+            --bg: #ffffff;
+            --ink: #15161a;
+            --muted: #8a8d98;
+            --faint: #c7c9d1;
+            --accent-1: #ff7a59;
+            --accent-2: #ff3b30;
+            --accent-soft: #fff1ee;
+            --good: #1bb15b;
+            --radius: 18px;
+            --maxw: 640px;
+            --red: #ff3131;
+            --green: #00bf63;
+            --text: #17191d;
+            --line: #e9edf3;
+            --glass: rgba(255, 255, 255, .68);
+            font-size: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 4% 45%, rgba(0, 210, 120, .16), transparent 27%),
+                radial-gradient(circle at 96% 23%, rgba(255, 45, 45, .15), transparent 26%),
+                linear-gradient(135deg, #f9fbff 0%, #fff 48%, #f9fbff 100%);
+            overflow-x: hidden;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+        }
+        body::before {
+            width: 520px;
+            height: 520px;
+            left: -250px;
+            bottom: 40px;
+            border: 1px solid rgba(0, 191, 99, .12);
+            border-radius: 50%;
+            box-shadow: 120px 0 0 -1px rgba(0, 191, 99, .08),
+                240px 0 0 -1px rgba(0, 191, 99, .05);
+        }
+        body::after {
+            width: 560px;
+            height: 560px;
+            right: -300px;
+            top: 100px;
+            border: 1px solid rgba(255, 49, 49, .10);
+            border-radius: 50%;
+        }
+
+        /* ---------- TOPBAR ---------- */
+        .topbar {
+            padding: 20px clamp(16px, 4vw, 40px) 0;
+        }
+        .topbar__inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand__mark {
+            display: block;
+        }
+        .brand__name {
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .topbar__nav {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+        .linklike {
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--muted);
+            text-decoration: none;
+            cursor: pointer;
+            padding: 6px 4px;
+        }
+        .linklike:hover {
+            color: var(--ink);
+        }
+
+        /* ---------- STAGE ---------- */
+        .stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(24px, 6vw, 56px) 20px 8px;
+            max-width: var(--maxw);
+            margin: 0 auto;
+            width: 100%;
+            text-align: center;
+        }
+
+        .ring-wrap {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            max-width: 78vw;
+            max-height: 78vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .35);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 9px 28px rgba(45, 55, 70, .05);
+            padding: 13px;
+            filter: drop-shadow(0 12px 24px rgba(80, 90, 110, .05));
+        }
+        .ring__track {
+            fill: none;
+            stroke: var(--line);
+            stroke-width: 6;
+        }
+        .ring__progress {
+            fill: none;
+            stroke: var(--accent-2);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 603;
+            stroke-dashoffset: 603;
+            transition: stroke-dashoffset .25s ease, stroke .3s ease;
+        }
+
+        .reading {
+            position: relative;
+            z-index: 1;
+        }
+        .reading__label {
+            margin: 0 0 2px;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .reading__number {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3.4rem, 14vw, 4.6rem);
+            line-height: 1;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+        }
+        .reading__unit {
+            margin: 2px 0 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .controlBtn {
+            position: absolute;
+            bottom: -6px;
+            right: 6px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1.5px solid var(--faint);
+            background: #fff;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color .2s, transform .15s, background .2s;
+            box-shadow: 0 1px 2px rgba(20, 20, 30, .04);
+        }
+        .controlBtn:hover {
+            border-color: var(--accent-2);
+            color: var(--accent-2);
+            transform: translateY(-1px);
+        }
+        .controlBtn:active {
+            transform: translateY(0);
+        }
+        .controlBtn.is-running {
+            border-color: var(--accent-2);
+            color: var(--accent-2);
+        }
+
+        /* ---------- STEPS ---------- */
+        .steps {
+            display: flex;
+            gap: 22px;
+            margin: 26px 0 6px;
+        }
+        .step {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--faint);
+            position: relative;
+            padding-left: 16px;
+        }
+        .step::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--faint);
+        }
+        .step.is-active {
+            color: var(--ink);
+        }
+        .step.is-active::before {
+            background: var(--accent-2);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .step.is-done {
+            color: var(--muted);
+        }
+        .step.is-done::before {
+            background: var(--good);
+        }
+
+        /* ---------- INFO CARDS (as in the requested image) ---------- */
+        .info-cards {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .info-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .50);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 233, 239, .8);
+            box-shadow: 0 4px 16px rgba(45, 55, 70, .04);
+            transition: box-shadow .2s ease;
+            min-height: 52px;
+        }
+        .info-card:hover {
+            box-shadow: 0 6px 24px rgba(45, 55, 70, .08);
+        }
+
+        .info-card.client {
+            border-left: 4px solid var(--red);
+        }
+        .info-card.server {
+            border-left: 4px solid var(--green);
+        }
+
+        .info-card__icon {
+            flex: 0 0 32px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--muted);
+        }
+        .info-card.client .info-card__icon {
+            background: var(--red);
+        }
+        .info-card.server .info-card__icon {
+            background: var(--green);
+        }
+
+        .info-card__body {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 2px 10px;
+        }
+
+        .info-card__label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .info-card__value {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--ink);
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .info-card__sub {
+            display: block;
+            font-weight: 400;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 1px;
+            width: 100%;
+        }
+
+        /* ---------- DETAILS ---------- */
+        .details {
+            display: flex;
+            gap: 36px;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            width: 100%;
+            justify-content: center;
+            opacity: .35;
+            transition: opacity .3s ease;
+        }
+        .details.is-ready {
+            opacity: 1;
+        }
+        .details__col h3 {
+            margin: 0 0 12px;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+            text-align: left;
+        }
+        .details__row {
+            display: flex;
+            gap: 26px;
+        }
+        .details__k {
+            margin: 0 0 2px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-align: left;
+        }
+        .details__v {
+            margin: 0;
+            font-family: 'DM Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--ink);
+            text-align: left;
+        }
+        .details__v--big {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .details__v small {
+            font-size: 0.68rem;
+            color: var(--muted);
+            margin-left: 2px;
+            font-family: 'Inter', sans-serif;
+        }
+        .details__v--big small {
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        /* ---------- RESULT BAR ---------- */
+        .resultBar {
+            margin-top: 22px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 10px 18px;
+        }
+        .resultBar__stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--ink);
+        }
+        .resultBar__stat svg {
+            color: var(--muted);
+        }
+
+        /* ---------- FOOTER ---------- */
+        .footer {
+            text-align: center;
+            padding: 30px 20px 40px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .footer p {
+            margin: 4px 0 0;
+        }
+
+        /* ---------- FAQ MODAL ---------- */
+        .modalOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 20, 26, .45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 50;
+        }
+        .modalOverlay[hidden] {
+            display: none;
+        }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 82vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(20, 20, 30, .25);
+        }
+        .modal__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+        }
+        .modal__header h2 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+        .modal__close {
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .modal__close:hover {
+            color: var(--ink);
+            border-color: var(--faint);
+        }
+        .modal__body {
+            padding: 8px 24px 28px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .modal__body h3 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin: 20px 0 6px;
+            color: var(--ink);
+        }
+        .modal__body p {
+            margin: 0 0 8px;
+            font-size: 0.86rem;
+            line-height: 1.55;
+            color: #4a4c56;
+        }
+        .modal__body ul {
+            margin: 0 0 8px;
+            padding-left: 20px;
+            font-size: 0.86rem;
+            line-height: 1.55;
+            color: #4a4c56;
+        }
+        .modal__body li {
+            margin-bottom: 4px;
+        }
+        .modal__body strong {
+            color: var(--ink);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 480px) {
+            .details {
+                gap: 20px;
+            }
+            .details__row {
+                gap: 16px;
+            }
+            .steps {
+                gap: 14px;
+            }
+            .step {
+                font-size: 0.7rem;
+                padding-left: 13px;
+            }
+            .details__v--big {
+                font-size: 2rem;
+            }
+            .resultBar {
+                padding: 9px 14px;
+                gap: 20px;
+            }
+            .info-card {
+                padding: 8px 12px;
+                min-height: 44px;
+            }
+            .info-card__value {
+                font-size: 0.85rem;
+            }
+            .info-card__sub {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ring__progress {
+                transition: none;
+            }
+            .controlBtn {
+                transition: none;
+            }
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent-2);
+            outline-offset: 2px;
+        }
+    </style>
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="topbar__inner">
-      <div class="brand" aria-hidden="false">
-
-        <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="FasterNET logo">
-          <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g1)" stroke-width="7" stroke-linecap="round"/>
-          <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g1)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
-          <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
-          <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
-          <defs>
-            <linearGradient id="g1" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#FF7A59"/>
-              <stop offset="1" stop-color="#FF3B30"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="brand__name">FasterNET</span>
-        
-
-      </div>
-      <nav class="topbar__nav">
-        <button class="linklike" id="homeBtn" type="button">Home</button>
-        <button class="linklike" id="aboutBtn" type="button" aria-haspopup="dialog" aria-controls="faqModal">About</button>
-      </nav>
-    </div>
-  </header>
-
-  <main class="stage">
-    <div class="ring-wrap">
-      <svg class="ring" viewBox="0 0 220 220" width="280" height="280" aria-hidden="true">
-        <circle class="ring__track" cx="110" cy="110" r="96"></circle>
-        <circle class="ring__progress" id="ringProgress" cx="110" cy="110" r="96"></circle>
-      </svg>
-
-      <div class="reading">
-        <p class="reading__label" id="phaseLabel">Getting ready…</p>
-        <div class="reading__number">
-          <span id="mainNumber">0</span>
-        </div>
-        <p class="reading__unit" id="mainUnit">Mbps</p>
-      </div>
-
-      <button class="controlBtn" id="controlBtn" type="button" aria-label="Start test">
-        <svg id="iconPlay" viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-        <svg id="iconPause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>
-        <svg id="iconRedo" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M17.65 6.35A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.76-4.24L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
-      </button>
-    </div>
-
-    <div class="steps" id="steps">
-      <span class="step" data-step="latency">Latency</span>
-      <span class="step" data-step="download">Download</span>
-      <span class="step" data-step="upload">Upload</span>
-    </div>
-
-    <section class="details" id="details">
-      <div class="details__col">
-        <h3>Latency</h3>
-        <div class="details__row">
-          <div>
-            <p class="details__k">Unloaded</p>
-            <p class="details__v"><span id="latUnloaded">–</span><small>ms</small></p>
-          </div>
-          <div>
-            <p class="details__k">Loaded</p>
-            <p class="details__v details__v--big"><span id="latLoaded">–</span><small>ms</small></p>
-          </div>
-        </div>
-      </div>
-      <div class="details__col">
-        <h3>Upload</h3>
-        <div class="details__row">
-          <div>
-            <p class="details__k">Speed</p>
-            <p class="details__v details__v--big"><span id="uploadSpeed">–</span><small>Mbps</small></p>
-          </div>
-        </div>
-      </div>
-    </section>
-        <section class="info-card client">
-
-       <div>
-                <span class="info-label">
-          <p class="meta"><strong>Client</strong></span>&nbsp;&nbsp;<span class="info-value"><span id="clientMeta">–</span></span></p>
-  </div>  </section>
-    
-     <section class="info-card server">
-            <div>
-          
-            <span class="info-label">
-          <p class="meta"><strong>Server(s)</strong></span>&nbsp;&nbsp;<span class="info-value"><span id="serverMeta">–</span></span></p>
+    <header class="topbar">
+        <div class="topbar__inner">
+            <div class="brand" aria-hidden="false">
+                <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="FasterNET logo">
+                    <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g1)" stroke-width="7" stroke-linecap="round"/>
+                    <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g1)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+                    <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
+                    <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="g1" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#FF7A59"/>
+                            <stop offset="1" stop-color="#FF3B30"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="brand__name">FasterNET</span>
             </div>
-            </section>
-    <!-- result bar: transfer totals -->
-    <div class="resultBar">
-      <span class="resultBar__stat">
-        <span id="downloadTotal">–</span>
-        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-      <span class="resultBar__stat">
-        <span id="uploadTotal">–</span>
-        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 21V8m0 0l-5 5m5-5l5 5M5 4h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-    </div>
-  </main>
+            <nav class="topbar__nav">
+                <button class="linklike" id="homeBtn" type="button">Home</button>
+                <button class="linklike" id="aboutBtn" type="button" aria-haspopup="dialog" aria-controls="faqModal">About</button>
+            </nav>
+        </div>
+    </header>
 
-  <footer class="footer">
-       <center>   <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="FasterNET logo">
-          <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g1)" stroke-width="7" stroke-linecap="round"/>
-          <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g1)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
-          <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
-          <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
-          <defs>
-            <linearGradient id="g1" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#D5D7DD"/>
-              <stop offset="1" stop-color="#8A8D98"/>
-            </linearGradient>
-          </defs>
-        </svg></center>  
+    <main class="stage">
+
+        <!-- RING -->
+        <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 220 220" width="280" height="280" aria-hidden="true">
+                <circle class="ring__track" cx="110" cy="110" r="96"></circle>
+                <circle class="ring__progress" id="ringProgress" cx="110" cy="110" r="96"></circle>
+            </svg>
+            <div class="reading">
+                <p class="reading__label" id="phaseLabel">Getting ready…</p>
+                <div class="reading__number">
+                    <span id="mainNumber">0</span>
+                </div>
+                <p class="reading__unit" id="mainUnit">Mbps</p>
+            </div>
+            <button class="controlBtn" id="controlBtn" type="button" aria-label="Start test">
+                <svg id="iconPlay" viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                <svg id="iconPause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>
+                <svg id="iconRedo" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M17.65 6.35A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.76-4.24L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
+            </button>
+        </div>
+
+        <!-- STEPS -->
+        <div class="steps" id="steps">
+            <span class="step" data-step="latency">Latency</span>
+            <span class="step" data-step="download">Download</span>
+            <span class="step" data-step="upload">Upload</span>
+        </div>
+
+        <!-- INFO CARDS — matching the requested image -->
+        <div class="info-cards">
+
+            <!-- Client card -->
+            <div class="info-card client">
+                <div class="info-card__icon" aria-hidden="true">C</div>
+                <div class="info-card__body">
+                    <span class="info-card__label">Client</span>
+                    <span class="info-card__value" id="clientMeta">–</span>
+                    <span class="info-card__sub" id="clientSub"></span>
+                </div>
+            </div>
+
+            <!-- Server card -->
+            <div class="info-card server">
+                <div class="info-card__icon" aria-hidden="true">S</div>
+                <div class="info-card__body">
+                    <span class="info-card__label">Server(s)</span>
+                    <span class="info-card__value" id="serverMeta">–</span>
+                    <span class="info-card__sub" id="serverSub"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- DETAILS -->
+        <section class="details" id="details">
+            <div class="details__col">
+                <h3>Latency</h3>
+                <div class="details__row">
+                    <div>
+                        <p class="details__k">Unloaded</p>
+                        <p class="details__v"><span id="latUnloaded">–</span><small>ms</small></p>
+                    </div>
+                    <div>
+                        <p class="details__k">Loaded</p>
+                        <p class="details__v details__v--big"><span id="latLoaded">–</span><small>ms</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="details__col">
+                <h3>Upload</h3>
+                <div class="details__row">
+                    <div>
+                        <p class="details__k">Speed</p>
+                        <p class="details__v details__v--big"><span id="uploadSpeed">–</span><small>Mbps</small></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULT BAR -->
+        <div class="resultBar">
+            <span class="resultBar__stat">
+                <span id="downloadTotal">–</span>
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="resultBar__stat">
+                <span id="uploadTotal">–</span>
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 21V8m0 0l-5 5m5-5l5 5M5 4h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <center>
+            <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="FasterNET logo">
+                <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g2)" stroke-width="7" stroke-linecap="round"/>
+                <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g2)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+                <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
+                <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
+                <defs>
+                    <linearGradient id="g2" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#D5D7DD"/>
+                        <stop offset="1" stop-color="#8A8D98"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </center>
         <span class="brand__name">FasterNET</span>
-    
-    <p>Designed & Developed by Suresh Kaleyannan</p>
-  </footer>
+        <p>Designed &amp; Developed by Suresh Kaleyannan</p>
+    </footer>
 
-  <div class="modalOverlay" id="faqModal" role="dialog" aria-modal="true" aria-labelledby="faqTitle" hidden>
-    <div class="modal">
-      <div class="modal__header">
-        <h2 id="faqTitle">FasterNET — Frequently Asked Questions</h2>
-        <button class="modal__close" id="faqClose" type="button" aria-label="Close">
-          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div class="modal__body">
-        <h3>What does FasterNet measure?</h3>
-        <p>FasterNet measures your current Internet connection performance and provides an estimate of the speed available to your device at the time of testing. The result reflects how quickly your connection can transfer data through FasterNet's distributed testing infrastructure.</p>
+    <!-- FAQ MODAL -->
+    <div class="modalOverlay" id="faqModal" role="dialog" aria-modal="true" aria-labelledby="faqTitle" hidden>
+        <div class="modal">
+            <div class="modal__header">
+                <h2 id="faqTitle">FasterNET — Frequently Asked Questions</h2>
+                <button class="modal__close" id="faqClose" type="button" aria-label="Close">
+                    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal__body">
+                <h3>What does FasterNet measure?</h3>
+                <p>FasterNet measures your current Internet connection performance and provides an estimate of the speed available to your device at the time of testing. The result reflects how quickly your connection can transfer data through FasterNet's distributed testing infrastructure.</p>
 
-        <h3>Why does FasterNet focus on download speed?</h3>
-        <p>For most Internet users, download performance has the biggest impact on everyday activities such as streaming, browsing, downloading files, using social media, and viewing online content. FasterNet keeps the experience simple by making download speed the primary measurement.</p>
+                <h3>Why does FasterNet focus on download speed?</h3>
+                <p>For most Internet users, download performance has the biggest impact on everyday activities such as streaming, browsing, downloading files, using social media, and viewing online content. FasterNet keeps the experience simple by making download speed the primary measurement.</p>
 
-        <h3>Can FasterNet measure upload speed and latency?</h3>
-        <p>Yes. FasterNet can provide additional information about your connection, including <strong>upload speed</strong> and <strong>latency (ping)</strong>.</p>
-        <p>Latency indicates how quickly your connection responds to a request. FasterNet can also compare your connection latency when it is idle with latency while data is being transferred. A significant difference between these measurements can indicate <strong>bufferbloat</strong>, which may affect real-time activities such as gaming, video calls, and voice communication.</p>
+                <h3>Can FasterNet measure upload speed and latency?</h3>
+                <p>Yes. FasterNet can provide additional information about your connection, including <strong>upload speed</strong> and <strong>latency (ping)</strong>.</p>
+                <p>Latency indicates how quickly your connection responds to a request. FasterNet can also compare your connection latency when it is idle with latency while data is being transferred. A significant difference between these measurements can indicate <strong>bufferbloat</strong>, which may affect real-time activities such as gaming, video calls, and voice communication.</p>
 
-        <h3>How does FasterNet calculate my Internet speed?</h3>
-        <p>FasterNet performs a series of controlled data transfers between your device and its speed-testing servers. By measuring how quickly data can be downloaded and uploaded, FasterNet determines an estimated maximum performance for your current Internet connection.</p>
-        <p>Actual speeds can vary depending on your Wi-Fi signal, device, network congestion, ISP routing, server distance, and other conditions.</p>
+                <h3>How does FasterNet calculate my Internet speed?</h3>
+                <p>FasterNet performs a series of controlled data transfers between your device and its speed-testing servers. By measuring how quickly data can be downloaded and uploaded, FasterNet determines an estimated maximum performance for your current Internet connection.</p>
+                <p>Actual speeds can vary depending on your Wi-Fi signal, device, network congestion, ISP routing, server distance, and other conditions.</p>
 
-        <h3>Can I use FasterNet anywhere?</h3>
-        <p>FasterNet is designed to work wherever a compatible Internet connection and supported web browser are available. You can test your connection from devices such as <strong>smartphones, tablets, laptops, desktop computers, and supported smart TVs</strong>.</p>
-        <p>For the most accurate result, we recommend running the test without other heavy downloads, uploads, or streaming activities taking place on your network.</p>
+                <h3>Can I use FasterNet anywhere?</h3>
+                <p>FasterNet is designed to work wherever a compatible Internet connection and supported web browser are available. You can test your connection from devices such as <strong>smartphones, tablets, laptops, desktop computers, and supported smart TVs</strong>.</p>
+                <p>For the most accurate result, we recommend running the test without other heavy downloads, uploads, or streaming activities taking place on your network.</p>
 
-        <h3>Why did we create FasterNet?</h3>
-        <p>We believe Internet speed testing should be <strong>fast, simple, transparent, and accessible to everyone</strong>.</p>
-        <p>FasterNet provides users with an easy way to understand their current connection performance without unnecessary complexity. Whether you're checking your home broadband, mobile connection, Wi-Fi performance, or troubleshooting a slow connection, FasterNet helps you get a quick snapshot of your Internet speed.</p>
+                <h3>Why did we create FasterNet?</h3>
+                <p>We believe Internet speed testing should be <strong>fast, simple, transparent, and accessible to everyone</strong>.</p>
+                <p>FasterNet provides users with an easy way to understand their current connection performance without unnecessary complexity. Whether you're checking your home broadband, mobile connection, Wi-Fi performance, or troubleshooting a slow connection, FasterNet helps you get a quick snapshot of your Internet speed.</p>
 
-        <h3>What if my FasterNet result is lower than the speed I pay for?</h3>
-        <p>Internet speeds can change depending on network congestion, Wi-Fi conditions, device performance, time of day, and other factors.</p>
-        <p>If FasterNet repeatedly reports speeds significantly below the service advertised by your Internet Service Provider (ISP), try testing again using a wired connection or another device. If the results remain consistently low, contact your ISP and provide them with your test results for further investigation.</p>
+                <h3>What if my FasterNet result is lower than the speed I pay for?</h3>
+                <p>Internet speeds can change depending on network congestion, Wi-Fi conditions, device performance, time of day, and other factors.</p>
+                <p>If FasterNet repeatedly reports speeds significantly below the service advertised by your Internet Service Provider (ISP), try testing again using a wired connection or another device. If the results remain consistently low, contact your ISP and provide them with your test results for further investigation.</p>
 
-        <h3>Can FasterNet be used for business or bandwidth certification?</h3>
-        <p>FasterNet is primarily intended as a convenient Internet performance testing tool for general users.</p>
-        <p>Test results are estimates of connection performance at a particular time and under particular conditions. Unless a separate enterprise or certification service is explicitly provided, FasterNet results should not be considered formal certification of contracted bandwidth, network capacity, or service-level compliance.</p>
+                <h3>Can FasterNet be used for business or bandwidth certification?</h3>
+                <p>FasterNet is primarily intended as a convenient Internet performance testing tool for general users.</p>
+                <p>Test results are estimates of connection performance at a particular time and under particular conditions. Unless a separate enterprise or certification service is explicitly provided, FasterNet results should not be considered formal certification of contracted bandwidth, network capacity, or service-level compliance.</p>
 
-        <h3>Does FasterNet guarantee the speed advertised by my ISP?</h3>
-        <p>No. FasterNet measures the performance available between your device and the FasterNet testing infrastructure at the time of the test.</p>
-        <p>Your ISP's advertised speed may represent a maximum or expected service rate under specific conditions. The speed you experience can be affected by your local network, Wi-Fi, hardware, Internet traffic, routing, and other factors.</p>
+                <h3>Does FasterNet guarantee the speed advertised by my ISP?</h3>
+                <p>No. FasterNet measures the performance available between your device and the FasterNet testing infrastructure at the time of the test.</p>
+                <p>Your ISP's advertised speed may represent a maximum or expected service rate under specific conditions. The speed you experience can be affected by your local network, Wi-Fi, hardware, Internet traffic, routing, and other factors.</p>
 
-        <h3>How can I get the most accurate FasterNet result?</h3>
-        <p>For the best possible measurement:</p>
-        <ul>
-          <li>Use a modern device and updated browser.</li>
-          <li>Move close to your Wi-Fi router, or use a wired Ethernet connection.</li>
-          <li>Pause large downloads, uploads, and streaming services.</li>
-          <li>Disconnect unnecessary devices using your network.</li>
-          <li>Run the test several times at different times of the day.</li>
-          <li>Compare results across multiple devices when troubleshooting.</li>
-        </ul>
-        <p>A single speed test is useful, but <strong>consistent results over multiple tests provide a better picture of your connection performance</strong>.</p>
+                <h3>How can I get the most accurate FasterNet result?</h3>
+                <p>For the best possible measurement:</p>
+                <ul>
+                    <li>Use a modern device and updated browser.</li>
+                    <li>Move close to your Wi-Fi router, or use a wired Ethernet connection.</li>
+                    <li>Pause large downloads, uploads, and streaming services.</li>
+                    <li>Disconnect unnecessary devices using your network.</li>
+                    <li>Run the test several times at different times of the day.</li>
+                    <li>Compare results across multiple devices when troubleshooting.</li>
+                </ul>
+                <p>A single speed test is useful, but <strong>consistent results over multiple tests provide a better picture of your connection performance</strong>.</p>
 
-        <h3>Is FasterNet free to use?</h3>
-        <p>FasterNet is designed to provide a simple and accessible way for users to test their Internet connection. Any available features, services, or usage limitations are determined by the current FasterNet platform.</p>
-      </div>
+                <h3>Is FasterNet free to use?</h3>
+                <p>FasterNet is designed to provide a simple and accessible way for users to test their Internet connection. Any available features, services, or usage limitations are determined by the current FasterNet platform.</p>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <script>
+        /*
+          FasterNET — a small, dependency-free internet speed test.
+          Measures latency, download and upload throughput against
+          Cloudflare's public, CORS-enabled speed test endpoints.
+        */
+
+        const CF_DOWN = (bytes) => `https://speed.cloudflare.com/__down?bytes=${bytes}`;
+        const CF_UP = 'https://speed.cloudflare.com/__up';
+        const IP_INFO = 'https://ipwho.is/';
+        const DOWN_CHUNK = 4 * 1024 * 1024; // 4MB per streamed request
+        const UP_CHUNK = 2 * 1024 * 1024; // 2MB per upload request
+        const CONFIG_KEY = 'fasternet-config';
+        const AUTOSTART_DELAY_MS = 2000;
+
+        const DEFAULT_SETTINGS = {
+            connMin: 1,
+            connMax: 8,
+            durMin: 5,
+            durMax: 30,
+            loadedUpload: false,
+            alwaysShow: false,
+            saveConfig: false,
+        };
+
+        let settings = { ...DEFAULT_SETTINGS };
+
+        const els = {
+            ring: document.getElementById('ringProgress'),
+            phaseLabel: document.getElementById('phaseLabel'),
+            mainNumber: document.getElementById('mainNumber'),
+            mainUnit: document.getElementById('mainUnit'),
+            controlBtn: document.getElementById('controlBtn'),
+            iconPlay: document.getElementById('iconPlay'),
+            iconPause: document.getElementById('iconPause'),
+            iconRedo: document.getElementById('iconRedo'),
+            steps: document.getElementById('steps'),
+            details: document.getElementById('details'),
+            latUnloaded: document.getElementById('latUnloaded'),
+            latLoaded: document.getElementById('latLoaded'),
+            uploadSpeed: document.getElementById('uploadSpeed'),
+            clientMeta: document.getElementById('clientMeta'),
+            serverMeta: document.getElementById('serverMeta'),
+            downloadTotal: document.getElementById('downloadTotal'),
+            uploadTotal: document.getElementById('uploadTotal'),
+            homeBtn: document.getElementById('homeBtn'),
+            aboutBtn: document.getElementById('aboutBtn'),
+            faqModal: document.getElementById('faqModal'),
+            faqClose: document.getElementById('faqClose'),
+        };
+
+        const RING_CIRCUMFERENCE = 2 * Math.PI * 96;
+        els.ring.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+
+        let state = 'idle'; // idle | running | done | error
+        let abortCtl = null;
+        let displayedNumber = 0;
+        let animFrame = null;
+        let autoStartTimer = null;
+
+        // ---------------- settings persistence ----------------
+
+        function loadSettings() {
+            try {
+                const raw = localStorage.getItem(CONFIG_KEY);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    settings = { ...DEFAULT_SETTINGS, ...saved };
+                }
+            } catch (_) {
+                settings = { ...DEFAULT_SETTINGS };
+            }
+        }
+
+        // ---------------- helpers ----------------
+
+        function setRing(fraction) {
+            const clamped = Math.max(0, Math.min(1, fraction));
+            els.ring.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - clamped));
+        }
+
+        function setStep(name) {
+            [...els.steps.children].forEach((el) => {
+                el.classList.remove('is-active', 'is-done');
+                const order = ['latency', 'download', 'upload'];
+                if (el.dataset.step === name) el.classList.add('is-active');
+                else if (order.indexOf(el.dataset.step) < order.indexOf(name)) el.classList.add('is-done');
+            });
+        }
+
+        function markAllStepsDone() {
+            [...els.steps.children].forEach((el) => {
+                el.classList.remove('is-active');
+                el.classList.add('is-done');
+            });
+        }
+
+        function animateNumberTo(target, opts = {}) {
+            const duration = opts.duration ?? 400;
+            const start = displayedNumber;
+            const startTime = performance.now();
+            if (animFrame) cancelAnimationFrame(animFrame);
+
+            function tick(now) {
+                const t = Math.min(1, (now - startTime) / duration);
+                const eased = 1 - Math.pow(1 - t, 3);
+                displayedNumber = start + (target - start) * eased;
+                els.mainNumber.textContent = formatSpeed(displayedNumber);
+                if (t < 1) {
+                    animFrame = requestAnimationFrame(tick);
+                } else {
+                    displayedNumber = target;
+                    els.mainNumber.textContent = formatSpeed(target);
+                }
+            }
+            animFrame = requestAnimationFrame(tick);
+        }
+
+        function formatSpeed(v) {
+            if (v >= 100) return Math.round(v).toString();
+            if (v >= 10) return v.toFixed(1);
+            return v.toFixed(2);
+        }
+
+        function formatMB(bytes) {
+            return (bytes / 1_000_000).toFixed(1) + 'MB';
+        }
+
+        function median(arr) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        }
+
+        function bytesToMbps(bytes, seconds) {
+            if (seconds <= 0) return 0;
+            return (bytes * 8) / seconds / 1_000_000;
+        }
+
+        function sleep(ms) {
+            return new Promise((r) => setTimeout(r, ms));
+        }
+
+        function checkAbort(signal) {
+            if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+        }
+
+        // ---------------- test phases ----------------
+
+        async function pingOnce(signal) {
+            const t0 = performance.now();
+            await fetch(CF_DOWN(0), { cache: 'no-store', signal });
+            return performance.now() - t0;
+        }
+
+        async function measureUnloadedLatency(signal) {
+            const samples = [];
+            for (let i = 0; i < 8; i++) {
+                try {
+                    samples.push(await pingOnce(signal));
+                } catch (_) {
+                    /* ignore a dropped sample */
+                }
+            }
+            if (!samples.length) throw new Error('latency-failed');
+            return median(samples);
+        }
+
+        function pingLoop(signal, isStoppedFn, out) {
+            return (async () => {
+                while (!isStoppedFn()) {
+                    try {
+                        out.push(await pingOnce(signal));
+                    } catch (_) { /* saturated link; skip sample */ }
+                    await sleep(400);
+                }
+            })();
+        }
+
+        /**
+         * Adaptive, duration-bounded transfer: ramps parallel connections from
+         * connMin up to connMax, and stops once the measurement stabilizes after
+         * durMin seconds (or unconditionally at durMax seconds).
+         */
+        async function runAdaptiveTransfer({ cfg, signal, onProgress, doRequest }) {
+            let stop = false;
+            let totalBytes = 0;
+            const start = performance.now();
+            let targetWorkers = cfg.connMin;
+            const samples = [];
+            let lastSampleTime = start;
+            let lastSampleBytes = 0;
+
+            function addBytes(n) {
+                totalBytes += n;
+            }
+
+            function recordSample(force) {
+                const now = performance.now();
+                if (!force && now - lastSampleTime < 200) return;
+                const windowBytes = totalBytes - lastSampleBytes;
+                const dt = (now - lastSampleTime) / 1000;
+                const instMbps = bytesToMbps(windowBytes, dt);
+                if (instMbps > 0) {
+                    samples.push(instMbps);
+                    if (samples.length > 6) samples.shift();
+                }
+                const overall = bytesToMbps(totalBytes, (now - start) / 1000);
+                onProgress(overall || instMbps, totalBytes);
+                lastSampleTime = now;
+                lastSampleBytes = totalBytes;
+            }
+
+            function stabilized() {
+                if (samples.length < 5) return false;
+                const recent = samples.slice(-5);
+                const mx = Math.max(...recent);
+                const mn = Math.min(...recent);
+                const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+                return avg > 0 && (mx - mn) / avg < 0.12;
+            }
+
+            const rampTimer = setInterval(() => {
+                if (targetWorkers < cfg.connMax) targetWorkers++;
+            }, 1000);
+
+            const workers = [];
+            async function worker() {
+                while (!stop) {
+                    try {
+                        await doRequest(signal, addBytes, () => stop);
+                        recordSample(false);
+                    } catch (e) {
+                        if (signal.aborted) return;
+                        await sleep(200);
+                    }
+                }
+            }
+            function maybeSpawn() {
+                while (workers.length < targetWorkers && !stop) {
+                    workers.push(worker());
+                }
+            }
+            const spawnTimer = setInterval(maybeSpawn, 300);
+            maybeSpawn();
+
+            while (true) {
+                await sleep(250);
+                recordSample(false);
+                const elapsed = (performance.now() - start) / 1000;
+                if (signal.aborted) break;
+                if (elapsed >= cfg.durMax) break;
+                if (elapsed >= cfg.durMin && stabilized()) break;
+            }
+            stop = true;
+            clearInterval(rampTimer);
+            clearInterval(spawnTimer);
+            await Promise.all(workers);
+            recordSample(true);
+            const elapsed = (performance.now() - start) / 1000;
+            return { mbps: bytesToMbps(totalBytes, elapsed), totalBytes };
+        }
+
+        function measureDownload(cfg, signal, onProgress) {
+            return runAdaptiveTransfer({
+                cfg,
+                signal,
+                onProgress,
+                doRequest: async (sig, addBytes) => {
+                    const res = await fetch(CF_DOWN(DOWN_CHUNK), { cache: 'no-store', signal: sig });
+                    const reader = res.body.getReader();
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        addBytes(value.length);
+                    }
+                },
+            });
+        }
+
+        function measureUpload(cfg, signal, onProgress) {
+            const payload = new Uint8Array(UP_CHUNK);
+            crypto.getRandomValues(payload.subarray(0, Math.min(65536, payload.length)));
+            for (let offset = 65536; offset < payload.length; offset += 65536) {
+                payload.set(payload.subarray(0, Math.min(65536, payload.length - offset)), offset);
+            }
+
+            return runAdaptiveTransfer({
+                cfg,
+                signal,
+                onProgress,
+                doRequest: (sig, addBytes) =>
+                    new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        let lastLoaded = 0;
+                        xhr.open('POST', CF_UP, true);
+                        xhr.upload.onprogress = (e) => {
+                            addBytes(e.loaded - lastLoaded);
+                            lastLoaded = e.loaded;
+                        };
+                        xhr.onloadend = () => resolve();
+                        xhr.onerror = () => reject(new Error('upload-failed'));
+                        const onAbort = () => xhr.abort();
+                        sig.addEventListener('abort', onAbort, { once: true });
+                        xhr.send(payload);
+                    }),
+            });
+        }
+
+        async function loadClientInfo(signal) {
+            try {
+                const res = await fetch(IP_INFO, { signal });
+                const data = await res.json();
+                if (data && data.success !== false) {
+                    const isp = data.connection?.isp || data.connection?.org || '';
+                    const place = [data.city, data.country_code].filter(Boolean).join(', ');
+                    els.clientMeta.textContent = [place, data.ip, isp].filter(Boolean).join('   ');
+                } else {
+                    els.clientMeta.textContent = 'unavailable';
+                }
+            } catch (_) {
+                els.clientMeta.textContent = 'unavailable';
+            }
+            els.serverMeta.textContent = 'Cloudflare global network (nearest edge, auto-selected)';
+        }
+
+        // ---------------- orchestration ----------------
+
+        function resetUI() {
+            displayedNumber = 0;
+            els.mainNumber.textContent = '0';
+            els.mainUnit.textContent = 'Mbps';
+            els.phaseLabel.textContent = 'Getting ready…';
+            els.latUnloaded.textContent = '–';
+            els.latLoaded.textContent = '–';
+            els.uploadSpeed.textContent = '–';
+            els.downloadTotal.textContent = '–';
+            els.uploadTotal.textContent = '–';
+            els.details.classList.toggle('is-ready', !!settings.alwaysShow);
+            setRing(0);
+            [...els.steps.children].forEach((el) => el.classList.remove('is-active', 'is-done'));
+        }
+
+        function setControlIcon(mode) {
+            els.iconPlay.style.display = mode === 'play' ? '' : 'none';
+            els.iconPause.style.display = mode === 'pause' ? '' : 'none';
+            els.iconRedo.style.display = mode === 'redo' ? '' : 'none';
+            els.controlBtn.classList.toggle('is-running', mode === 'pause');
+            els.controlBtn.setAttribute(
+                'aria-label',
+                mode === 'play' ? 'Start test' : mode === 'pause' ? 'Cancel test' : 'Run again'
+            );
+        }
+
+        async function runTest() {
+            if (autoStartTimer) {
+                clearTimeout(autoStartTimer);
+                autoStartTimer = null;
+            }
+            state = 'running';
+            abortCtl = new AbortController();
+            const { signal } = abortCtl;
+            resetUI();
+            setControlIcon('pause');
+
+            const cfg = { connMin: settings.connMin, connMax: settings.connMax, durMin: settings.durMin,
+            durMax: settings.durMax };
+
+            loadClientInfo(signal);
+
+            try {
+                // 1. latency
+                setStep('latency');
+                els.phaseLabel.textContent = 'Testing latency';
+                els.mainUnit.textContent = 'ms';
+                setRing(0.03);
+                const unloaded = await measureUnloadedLatency(signal);
+                els.latUnloaded.textContent = unloaded.toFixed(0);
+                animateNumberTo(unloaded);
+                setRing(0.1);
+                await sleep(200);
+
+                // 2. download (with loaded-latency sampling running alongside)
+                setStep('download');
+                els.phaseLabel.textContent = 'Testing download speed';
+                els.mainUnit.textContent = 'Mbps';
+                els.details.classList.add('is-ready');
+
+                let dlStopped = false;
+                const loadedSamples = [];
+                const dlPingLoop = pingLoop(signal, () => dlStopped, loadedSamples);
+
+                const dl = await measureDownload(cfg, signal, (mbps, totalBytes) => {
+                    animateNumberTo(mbps, { duration: 150 });
+                    setRing(0.1 + Math.min(mbps / 300, 1) * 0.4);
+                    els.downloadTotal.textContent = formatMB(totalBytes);
+                });
+                dlStopped = true;
+                await dlPingLoop;
+                checkAbort(signal);
+                animateNumberTo(dl.mbps, { duration: 200 });
+                els.downloadTotal.textContent = formatMB(dl.totalBytes);
+                setRing(0.5);
+                await sleep(200);
+
+                // 3. upload (optionally also sampling loaded latency)
+                setStep('upload');
+                els.phaseLabel.textContent = 'Testing upload speed';
+
+                let ulStopped = false;
+                let ulPingLoop = Promise.resolve();
+                if (settings.loadedUpload) {
+                    ulPingLoop = pingLoop(signal, () => ulStopped, loadedSamples);
+                }
+
+                const ul = await measureUpload(cfg, signal, (mbps, totalBytes) => {
+                    els.uploadSpeed.textContent = mbps.toFixed(1);
+                    setRing(0.5 + Math.min(mbps / 150, 1) * 0.42);
+                    els.uploadTotal.textContent = formatMB(totalBytes);
+                });
+                ulStopped = true;
+                await ulPingLoop;
+                checkAbort(signal);
+                els.uploadSpeed.textContent = ul.mbps.toFixed(1);
+                els.uploadTotal.textContent = formatMB(ul.totalBytes);
+
+                if (loadedSamples.length) {
+                    els.latLoaded.textContent = median(loadedSamples).toFixed(0);
+                } else {
+                    els.latLoaded.textContent = unloaded.toFixed(0);
+                }
+
+                // done — headline number goes back to download, fast.com style
+                els.mainUnit.textContent = 'Mbps';
+                animateNumberTo(dl.mbps, { duration: 300 });
+                els.phaseLabel.textContent = 'Your internet speed is';
+                markAllStepsDone();
+                setRing(1);
+                state = 'done';
+                setControlIcon('redo');
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    els.phaseLabel.textContent = 'Test cancelled';
+                    state = 'idle';
+                    setControlIcon('play');
+                    setRing(0);
+                } else {
+                    console.error(err);
+                    els.phaseLabel.textContent = 'Could not reach the test server — check your connection';
+                    state = 'error';
+                    setControlIcon('redo');
+                }
+            }
+        }
+
+        function cancelTest() {
+            if (abortCtl) abortCtl.abort();
+            state = 'idle';
+        }
+
+        // ---------------- wiring: test control ----------------
+
+        els.controlBtn.addEventListener('click', () => {
+            if (state === 'running') {
+                cancelTest();
+            } else {
+                runTest();
+            }
+        });
+
+        // ---------------- wiring: top nav ----------------
+
+        els.homeBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ---------------- wiring: About / FAQ modal ----------------
+
+        let lastFocused = null;
+
+        function openFaq() {
+            lastFocused = document.activeElement;
+            els.faqModal.removeAttribute('hidden');
+            els.faqClose.focus();
+            document.addEventListener('keydown', onFaqKeydown);
+        }
+
+        function closeFaq() {
+            els.faqModal.setAttribute('hidden', '');
+            document.removeEventListener('keydown', onFaqKeydown);
+            if (lastFocused) lastFocused.focus();
+        }
+
+        function onFaqKeydown(e) {
+            if (e.key === 'Escape') closeFaq();
+        }
+
+        els.aboutBtn.addEventListener('click', openFaq);
+        els.faqClose.addEventListener('click', closeFaq);
+        els.faqModal.addEventListener('click', (e) => {
+            if (e.target === els.faqModal) closeFaq();
+        });
+
+        // ---------------- init ----------------
+
+        loadSettings();
+        resetUI();
+
+        function scheduleAutoStart() {
+            autoStartTimer = setTimeout(() => {
+                autoStartTimer = null;
+                runTest();
+            }, AUTOSTART_DELAY_MS);
+        }
+
+        if (document.readyState === 'complete') {
+            scheduleAutoStart();
+        } else {
+            window.addEventListener('load', scheduleAutoStart);
+        }
+    </script>
+
 </body>
 </html>
