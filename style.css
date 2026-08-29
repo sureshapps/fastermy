@@ -124,10 +124,10 @@ background:
   transform:rotate(-90deg);
   
             border-radius: 50%;
-            background:
-                conic-gradient(from -1deg,
-                    var(--red) 0deg 43deg,
-                    #edf0f5 43deg 360deg);
+background: rgba(255, 255, 255, .35);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 9px 28px rgba(45, 55, 70, .05);
+        
             padding: 13px;
             filter: drop-shadow(0 12px 24px rgba(80, 90, 110, .05));
         }
