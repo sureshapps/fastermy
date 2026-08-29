@@ -34,6 +34,31 @@ background:
   flex-direction:column;
             min-height: 100vh;
 }
+       body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+        }
+        body::before {
+            width: 520px;
+            height: 520px;
+            left: -250px;
+            bottom: 40px;
+            border: 1px solid rgba(0, 191, 99, .12);
+            border-radius: 50%;
+            box-shadow: 120px 0 0 -1px rgba(0, 191, 99, .08),
+                240px 0 0 -1px rgba(0, 191, 99, .05);
+        }
+        body::after {
+            width: 560px;
+            height: 560px;
+            right: -300px;
+            top: 100px;
+            border: 1px solid rgba(255, 49, 49, .10);
+            border-radius: 50%;
+        }
 
 /* ---------- topbar ---------- */
 .topbar{
