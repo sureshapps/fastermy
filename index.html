@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tempo — Internet Speed Test</title>
+<meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand" aria-hidden="false">
+        <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="Tempo logo">
+          <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g1)" stroke-width="7" stroke-linecap="round"/>
+          <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g1)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
+          <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
+          <line x1="32" y1="40" x2="45" y2="21" stroke="#1A1A1E" stroke-width="3.4" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="g1" x1="8" y1="16" x2="56" y2="16" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF7A59"/>
+              <stop offset="1" stop-color="#FF3B30"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="brand__name">tempo</span>
+      </div>
+      <nav class="topbar__nav">
+        <button class="linklike" id="unitsToggle" type="button" aria-label="Toggle units">Mbps</button>
+        <a class="linklike" href="#about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 220 220" width="280" height="280" aria-hidden="true">
+        <circle class="ring__track" cx="110" cy="110" r="96"></circle>
+        <circle class="ring__progress" id="ringProgress" cx="110" cy="110" r="96"></circle>
+      </svg>
+
+      <div class="reading">
+        <p class="reading__label" id="phaseLabel">Press start to begin</p>
+        <div class="reading__number">
+          <span id="mainNumber">0</span>
+        </div>
+        <p class="reading__unit" id="mainUnit">Mbps</p>
+      </div>
+
+      <button class="controlBtn" id="controlBtn" type="button" aria-label="Start test">
+        <svg id="iconPlay" viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        <svg id="iconPause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>
+        <svg id="iconRedo" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path d="M17.65 6.35A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.76-4.24L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
+      </button>
+    </div>
+
+    <div class="steps" id="steps">
+      <span class="step" data-step="latency">Latency</span>
+      <span class="step" data-step="download">Download</span>
+      <span class="step" data-step="upload">Upload</span>
+    </div>
+
+    <section class="details" id="details">
+      <div class="details__col">
+        <h3>Latency</h3>
+        <div class="details__row">
+          <div>
+            <p class="details__k">Unloaded</p>
+            <p class="details__v"><span id="latUnloaded">–</span><small>ms</small></p>
+          </div>
+          <div>
+            <p class="details__k">Loaded</p>
+            <p class="details__v"><span id="latLoaded">–</span><small>ms</small></p>
+          </div>
+        </div>
+      </div>
+      <div class="details__col">
+        <h3>Upload</h3>
+        <div class="details__row">
+          <div>
+            <p class="details__k">Speed</p>
+            <p class="details__v"><span id="uploadSpeed">–</span><small>Mbps</small></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="meta" id="clientMeta">Client &nbsp;–</p>
+    <p class="meta" id="serverMeta">Server &nbsp;Cloudflare global network</p>
+
+    <button class="settingsBtn" id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsPanel">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.63-.94L14.4 2.8a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.42a7.3 7.3 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.66 8.84a.5.5 0 0 0 .12.64L4.8 11.06a7.14 7.14 0 0 0-.06.94c0 .32.02.63.06.94L2.78 14.5a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.42a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.42a7.3 7.3 0 0 0 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" fill="currentColor"/></svg>
+      <span>Test settings</span>
+    </button>
+
+    <div class="settingsPanel" id="settingsPanel" hidden>
+      <label>
+        Download size
+        <select id="dlSize">
+          <option value="8388608">Quick (8 MB)</option>
+          <option value="26214400" selected>Standard (25 MB)</option>
+          <option value="52428800">Thorough (50 MB)</option>
+        </select>
+      </label>
+      <label>
+        Upload size
+        <select id="ulSize">
+          <option value="4194304">Quick (4 MB)</option>
+          <option value="8388608" selected>Standard (8 MB)</option>
+          <option value="16777216">Thorough (16 MB)</option>
+        </select>
+      </label>
+      <label class="checkline">
+        <input type="checkbox" id="autoStart" />
+        Auto-start on page load
+      </label>
+    </div>
+  </main>
+
+  <footer class="footer" id="about">
+    <p>Runs entirely in your browser, timed against Cloudflare's global network. No installs, no accounts.</p>
+    <p class="footer__small">Not affiliated with any ISP. Results are estimates and can vary by time of day, Wi-Fi conditions, and device.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
