@@ -217,7 +217,7 @@ background:
 
 /* ───────────── INFO CARDS ───────────── */
         .info-card {
-            min-height: 58px;
+            min-height: 308px;
             display: flex;
             align-items: center;
             gap: 8px;
