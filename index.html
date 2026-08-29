@@ -7,6 +7,8 @@
     <meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
+<link href="https://fonts.cdnfonts.com/css/lcd" rel="stylesheet">
+                
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -164,7 +166,7 @@
         .ring__progress {
             fill: none;
             stroke: var(--accent-2);
-            stroke-width: 6;
+            stroke-width: 12;
             stroke-linecap: round;
             stroke-dasharray: 603;
             stroke-dashoffset: 603;
@@ -177,14 +179,14 @@
         }
         .reading__label {
             margin: 0 0 2px;
-            font-size: 0.78rem;
+            font-size: 0.60rem;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             color: var(--muted);
             font-weight: 600;
         }
         .reading__number {
-            font-family: 'Inter', sans-serif;
+font-family: 'LCD2', sans-serif;
             font-weight: 800;
             font-size: clamp(3.4rem, 14vw, 4.6rem);
             line-height: 1;
@@ -455,8 +457,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-family: 'DM Mono', monospace;
-            font-size: 0.85rem;
+font-family: 'LCD2', sans-serif;
+            font-size: 0.83rem;
             color: var(--ink);
         }
         .resultBar__stat svg {
