@@ -94,16 +94,75 @@
     <p class="meta"><strong>Client</strong>&nbsp;&nbsp;<span id="clientMeta">–</span></p>
     <p class="meta"><strong>Server(s)</strong>&nbsp;&nbsp;<span id="serverMeta">–</span></p>
 
+    <!-- result bar: settings toggle + transfer totals -->
     <div class="resultBar">
-      <span class="resultBar__stat">
-        <span id="downloadTotal">–</span>
-        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-      <span class="resultBar__stat">
-        <span id="uploadTotal">–</span>
-        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 21V8m0 0l-5 5m5-5l5 5M5 4h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
+      <button class="setting-btn" id="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel">
+        ⚙ &nbsp; Setting
+      </button>
+      <div class="transfer-stats">
+        <span class="download">
+          <span id="downloadTotal">–</span>
+          <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="upload">
+          <span id="uploadTotal">–</span>
+          <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 21V8m0 0l-5 5m5-5l5 5M5 4h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
     </div>
+
+    <!-- SETTINGS PANEL (hidden by default; read-only display of the active test config) -->
+    <section class="settings" id="settingsPanel">
+      <div class="settings-grid">
+        <div>
+          <h4>Parallel connections</h4>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Min</label>
+              <input class="input" id="dispConnMin" value="1" readonly />
+            </div>
+            <div class="input-group">
+              <label>Max</label>
+              <input class="input" id="dispConnMax" value="8" readonly />
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4>Test duration (seconds)</h4>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Min</label>
+              <input class="input" id="dispDurMin" value="5" readonly />
+            </div>
+            <div class="input-group">
+              <label>Max</label>
+              <input class="input" id="dispDurMax" value="30" readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checks">
+        <div class="check">
+          <span class="check-box" id="dispLoadedUpload"></span>
+          Measure loaded latency during upload
+        </div>
+        <div class="check">
+          <span class="check-box" id="dispAlwaysShow"></span>
+          Always show all metrics
+        </div>
+        <div class="check">
+          <span class="check-box" id="dispSaveConfig"></span>
+          Save config for this device
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn" id="settingsReset" type="button">Reset</button>
+        <button class="btn save" id="settingsSave" type="button">Save</button>
+        <button class="btn" id="settingsCancel" type="button">Cancel</button>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -174,3 +233,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+p
