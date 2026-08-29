@@ -217,7 +217,7 @@ background:
 
 /* ───────────── INFO CARDS ───────────── */
         .info-card {
-            min-height: 78px;
+            min-height: 58px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -255,10 +255,10 @@ background:
 
         .info-label {
             color: #7e8494;
-            margin-right: 7px;
+            margin-right: 0px;
         }
         .info-value {
-            font-weight: 750;
+            font-weight: 0;
         }
         .info-sub {
             font-weight: 750;
