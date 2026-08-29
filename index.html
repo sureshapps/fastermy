@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Tempo — Internet Speed Test</title>
+<title>FasterNET — Internet Speed Test</title>
 <meta name="description" content="A fast, free, browser-based internet speed test. No app, no signup." />
 <meta name="theme-color" content="#ffffff" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23FF4B3E'/%3E%3C/svg%3E" />
@@ -17,7 +17,7 @@
   <header class="topbar">
     <div class="topbar__inner">
       <div class="brand" aria-hidden="false">
-        <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="Tempo logo">
+        <svg class="brand__mark" viewBox="0 0 64 64" width="30" height="30" role="img" aria-label="FasterNET logo">
           <path d="M8 40a24 24 0 0 1 48 0" fill="none" stroke="url(#g1)" stroke-width="7" stroke-linecap="round"/>
           <path d="M17 40a15 15 0 0 1 30 0" fill="none" stroke="url(#g1)" stroke-width="4.5" stroke-linecap="round" opacity="0.55"/>
           <circle cx="32" cy="40" r="3.6" fill="#1A1A1E"/>
@@ -29,11 +29,11 @@
             </linearGradient>
           </defs>
         </svg>
-        <span class="brand__name">tempo</span>
+        <span class="brand__name">FasterNET</span>
       </div>
       <nav class="topbar__nav">
-        <button class="linklike" id="unitsToggle" type="button" aria-label="Toggle units">Mbps</button>
-        <a class="linklike" href="#about">About</a>
+        <button class="linklike" id="homeBtn" type="button">Home</button>
+        <button class="linklike" id="aboutBtn" type="button" aria-haspopup="dialog" aria-controls="faqModal">About</button>
       </nav>
     </div>
   </header>
@@ -46,7 +46,7 @@
       </svg>
 
       <div class="reading">
-        <p class="reading__label" id="phaseLabel">Press start to begin</p>
+        <p class="reading__label" id="phaseLabel">Getting ready…</p>
         <div class="reading__number">
           <span id="mainNumber">0</span>
         </div>
@@ -76,7 +76,7 @@
           </div>
           <div>
             <p class="details__k">Loaded</p>
-            <p class="details__v"><span id="latLoaded">–</span><small>ms</small></p>
+            <p class="details__v details__v--big"><span id="latLoaded">–</span><small>ms</small></p>
           </div>
         </div>
       </div>
@@ -85,48 +85,122 @@
         <div class="details__row">
           <div>
             <p class="details__k">Speed</p>
-            <p class="details__v"><span id="uploadSpeed">–</span><small>Mbps</small></p>
+            <p class="details__v details__v--big"><span id="uploadSpeed">–</span><small>Mbps</small></p>
           </div>
         </div>
       </div>
     </section>
 
-    <p class="meta" id="clientMeta">Client &nbsp;–</p>
-    <p class="meta" id="serverMeta">Server &nbsp;Cloudflare global network</p>
+    <p class="meta"><strong>Client</strong>&nbsp;&nbsp;<span id="clientMeta">–</span></p>
+    <p class="meta"><strong>Server(s)</strong>&nbsp;&nbsp;<span id="serverMeta">–</span></p>
 
-    <button class="settingsBtn" id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsPanel">
-      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.63-.94L14.4 2.8a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.42a7.3 7.3 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.66 8.84a.5.5 0 0 0 .12.64L4.8 11.06a7.14 7.14 0 0 0-.06.94c0 .32.02.63.06.94L2.78 14.5a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.42a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.42a7.3 7.3 0 0 0 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" fill="currentColor"/></svg>
-      <span>Test settings</span>
-    </button>
+    <div class="resultBar">
+      <button class="resultBar__settings" id="settingsBtn" type="button" aria-expanded="false" aria-controls="settingsPanel">
+        <svg viewBox="0 0 24 24" width="15" height="15"><path d="M19.14 12.94a7.14 7.14 0 0 0 .06-.94 7.14 7.14 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.63-.94L14.4 2.8a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.42a7.3 7.3 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.66 8.84a.5.5 0 0 0 .12.64L4.8 11.06a7.14 7.14 0 0 0-.06.94c0 .32.02.63.06.94L2.78 14.5a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.42a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.42a7.3 7.3 0 0 0 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.56zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z" fill="currentColor"/></svg>
+        <span>Settings</span>
+      </button>
+      <span class="resultBar__stat">
+        <span id="downloadTotal">–</span>
+        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 3v13m0 0l-5-5m5 5l5-5M5 20h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="resultBar__stat">
+        <span id="uploadTotal">–</span>
+        <svg viewBox="0 0 24 24" width="13" height="13"><path d="M12 21V8m0 0l-5 5m5-5l5 5M5 4h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
 
     <div class="settingsPanel" id="settingsPanel" hidden>
-      <label>
-        Download size
-        <select id="dlSize">
-          <option value="8388608">Quick (8 MB)</option>
-          <option value="26214400" selected>Standard (25 MB)</option>
-          <option value="52428800">Thorough (50 MB)</option>
-        </select>
-      </label>
-      <label>
-        Upload size
-        <select id="ulSize">
-          <option value="4194304">Quick (4 MB)</option>
-          <option value="8388608" selected>Standard (8 MB)</option>
-          <option value="16777216">Thorough (16 MB)</option>
-        </select>
-      </label>
-      <label class="checkline">
-        <input type="checkbox" id="autoStart" />
-        Auto-start on page load
-      </label>
+      <div class="settingsPanel__grid">
+        <fieldset>
+          <legend>Parallel connections</legend>
+          <div class="settingsPanel__minmax">
+            <label>Min <input type="number" id="connMin" min="1" max="16" value="1" /></label>
+            <label>Max <input type="number" id="connMax" min="1" max="16" value="8" /></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Test duration (seconds)</legend>
+          <div class="settingsPanel__minmax">
+            <label>Min <input type="number" id="durMin" min="2" max="60" value="5" /></label>
+            <label>Max <input type="number" id="durMax" min="2" max="60" value="30" /></label>
+          </div>
+        </fieldset>
+      </div>
+      <label class="checkline"><input type="checkbox" id="optLoadedUpload" /> Measure loaded latency during upload</label>
+      <label class="checkline"><input type="checkbox" id="optAlwaysShow" /> Always show all metrics</label>
+      <label class="checkline"><input type="checkbox" id="optSaveConfig" /> Save config for this device</label>
+      <div class="settingsPanel__actions">
+        <button type="button" class="btnGhost" id="settingsReset">Reset</button>
+        <button type="button" class="btnGhost" id="settingsSave">Save</button>
+        <button type="button" class="btnGhost" id="settingsCancel">Cancel</button>
+      </div>
     </div>
   </main>
 
-  <footer class="footer" id="about">
-    <p>Runs entirely in your browser, timed against Cloudflare's global network. No installs, no accounts.</p>
-    <p class="footer__small">Not affiliated with any ISP. Results are estimates and can vary by time of day, Wi-Fi conditions, and device.</p>
+  <footer class="footer">
+    <p>Runs entirely in your browser, timed against a global test network. No installs, no accounts.</p>
   </footer>
+
+  <div class="modalOverlay" id="faqModal" role="dialog" aria-modal="true" aria-labelledby="faqTitle" hidden>
+    <div class="modal">
+      <div class="modal__header">
+        <h2 id="faqTitle">FasterNET — Frequently Asked Questions</h2>
+        <button class="modal__close" id="faqClose" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <h3>What does FasterNet measure?</h3>
+        <p>FasterNet measures your current Internet connection performance and provides an estimate of the speed available to your device at the time of testing. The result reflects how quickly your connection can transfer data through FasterNet's distributed testing infrastructure.</p>
+
+        <h3>Why does FasterNet focus on download speed?</h3>
+        <p>For most Internet users, download performance has the biggest impact on everyday activities such as streaming, browsing, downloading files, using social media, and viewing online content. FasterNet keeps the experience simple by making download speed the primary measurement.</p>
+
+        <h3>Can FasterNet measure upload speed and latency?</h3>
+        <p>Yes. FasterNet can provide additional information about your connection, including <strong>upload speed</strong> and <strong>latency (ping)</strong>.</p>
+        <p>Latency indicates how quickly your connection responds to a request. FasterNet can also compare your connection latency when it is idle with latency while data is being transferred. A significant difference between these measurements can indicate <strong>bufferbloat</strong>, which may affect real-time activities such as gaming, video calls, and voice communication.</p>
+
+        <h3>How does FasterNet calculate my Internet speed?</h3>
+        <p>FasterNet performs a series of controlled data transfers between your device and its speed-testing servers. By measuring how quickly data can be downloaded and uploaded, FasterNet determines an estimated maximum performance for your current Internet connection.</p>
+        <p>Actual speeds can vary depending on your Wi-Fi signal, device, network congestion, ISP routing, server distance, and other conditions.</p>
+
+        <h3>Can I use FasterNet anywhere?</h3>
+        <p>FasterNet is designed to work wherever a compatible Internet connection and supported web browser are available. You can test your connection from devices such as <strong>smartphones, tablets, laptops, desktop computers, and supported smart TVs</strong>.</p>
+        <p>For the most accurate result, we recommend running the test without other heavy downloads, uploads, or streaming activities taking place on your network.</p>
+
+        <h3>Why did we create FasterNet?</h3>
+        <p>We believe Internet speed testing should be <strong>fast, simple, transparent, and accessible to everyone</strong>.</p>
+        <p>FasterNet provides users with an easy way to understand their current connection performance without unnecessary complexity. Whether you're checking your home broadband, mobile connection, Wi-Fi performance, or troubleshooting a slow connection, FasterNet helps you get a quick snapshot of your Internet speed.</p>
+
+        <h3>What if my FasterNet result is lower than the speed I pay for?</h3>
+        <p>Internet speeds can change depending on network congestion, Wi-Fi conditions, device performance, time of day, and other factors.</p>
+        <p>If FasterNet repeatedly reports speeds significantly below the service advertised by your Internet Service Provider (ISP), try testing again using a wired connection or another device. If the results remain consistently low, contact your ISP and provide them with your test results for further investigation.</p>
+
+        <h3>Can FasterNet be used for business or bandwidth certification?</h3>
+        <p>FasterNet is primarily intended as a convenient Internet performance testing tool for general users.</p>
+        <p>Test results are estimates of connection performance at a particular time and under particular conditions. Unless a separate enterprise or certification service is explicitly provided, FasterNet results should not be considered formal certification of contracted bandwidth, network capacity, or service-level compliance.</p>
+
+        <h3>Does FasterNet guarantee the speed advertised by my ISP?</h3>
+        <p>No. FasterNet measures the performance available between your device and the FasterNet testing infrastructure at the time of the test.</p>
+        <p>Your ISP's advertised speed may represent a maximum or expected service rate under specific conditions. The speed you experience can be affected by your local network, Wi-Fi, hardware, Internet traffic, routing, and other factors.</p>
+
+        <h3>How can I get the most accurate FasterNet result?</h3>
+        <p>For the best possible measurement:</p>
+        <ul>
+          <li>Use a modern device and updated browser.</li>
+          <li>Move close to your Wi-Fi router, or use a wired Ethernet connection.</li>
+          <li>Pause large downloads, uploads, and streaming services.</li>
+          <li>Disconnect unnecessary devices using your network.</li>
+          <li>Run the test several times at different times of the day.</li>
+          <li>Compare results across multiple devices when troubleshooting.</li>
+        </ul>
+        <p>A single speed test is useful, but <strong>consistent results over multiple tests provide a better picture of your connection performance</strong>.</p>
+
+        <h3>Is FasterNet free to use?</h3>
+        <p>FasterNet is designed to provide a simple and accessible way for users to test their Internet connection. Any available features, services, or usage limitations are determined by the current FasterNet platform.</p>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
