@@ -58,8 +58,6 @@ let animFrame = null;
 let autoStartTimer = null;
 
 // ---------------- settings persistence ----------------
-// The settings UI is hidden, but a saved config (if one exists from an
-// earlier version of the page) is still honored; otherwise defaults apply.
 
 function loadSettings() {
   try {
