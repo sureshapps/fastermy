@@ -3,24 +3,33 @@
   --ink:#15161a;
   --muted:#8a8d98;
   --faint:#c7c9d1;
-  --line:#eceef2;
   --accent-1:#ff7a59;
   --accent-2:#ff3b30;
   --accent-soft:#fff1ee;
   --good:#1bb15b;
   --radius:18px;
   --maxw:640px;
+  --red: #ff3131;
+  --green: #00bf63;
+  --text: #17191d;
+  --line: #e9edf3;
+  --glass: rgba(255, 255, 255, .68);
   font-size:16px;
 }
+
 
 *{box-sizing:border-box;}
 html,body{height:100%;}
 body{
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+ color: var(--text);
+background:
+                radial-gradient(circle at 4% 45%, rgba(0, 210, 120, .16), transparent 27%),
+                radial-gradient(circle at 96% 23%, rgba(255, 45, 45, .15), transparent 26%),
+                linear-gradient(135deg, #f9fbff 0%, #fff 48%, #f9fbff 100%);
+  overflow-x: hidden;
   margin:0;
   background:var(--bg);
-  color:var(--ink);
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  -webkit-font-smoothing:antialiased;
   display:flex;
   flex-direction:column;
   min-height:100%;
